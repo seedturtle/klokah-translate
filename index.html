@@ -593,18 +593,23 @@ function updateDialects(lid, sel) {
 }
 function syncLangFromLearn() {
   const lid = langSel.value, did = dialSel.value;
-  langSel2.value = lid; updateDialects(lid, dialSel2); dialSel2.value = did;
-  state.did = did;
+  langSel2.value = lid; updateDialects(lid, dialSel2);
+  const firstDid = DIALECTS.find(d => d.lid === lid)?.did || did;
+  dialSel2.value = firstDid;
+  state.did = firstDid;
 }
 function syncLangFromTranslate() {
   const lid = langSel2.value, did = dialSel2.value;
-  langSel.value = lid; updateDialects(lid, dialSel); dialSel.value = did;
-  updateDialects(lid, dialSel2); // <-- 這行漏了！同步更新翻譯模式的方言
-  dialSel2.value = did;
-  state.did = did;
+  langSel.value = lid; updateDialects(lid, dialSel);
+  updateDialects(lid, dialSel2);
+  // Set to first available dialect of the selected language
+  const firstDid = DIALECTS.find(d => d.lid === lid)?.did || did;
+  dialSel.value = firstDid;
+  dialSel2.value = firstDid;
+  state.did = firstDid;
   // Invalidate dictionary if dialect changed
-  if (dictState.did !== did) { dictState.loaded = false; dictState.dictionary = {}; dictStatus.textContent = "📚 方言已變更，請重新載入詞庫"; dictStatus.className = "dict-status"; btnTranslate.disabled = true; loadDictBtn.textContent = "📚 載入詞庫"; }
-  dictState.did = did;
+  if (dictState.did !== firstDid) { dictState.loaded = false; dictState.dictionary = {}; dictStatus.textContent = "📚 方言已變更，請重新載入詞庫"; dictStatus.className = "dict-status"; btnTranslate.disabled = true; loadDictBtn.textContent = "📚 載入詞庫"; }
+  dictState.did = firstDid;
 }
 
 // ============================================================
