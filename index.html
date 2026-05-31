@@ -15,6 +15,7 @@
       --accent: #ff6b6b;
       --accent2: #ffd93d;
       --accent3: #6bcb77;
+      --accent4: #45b7d1;
       --text: #e8e8f0;
       --text-dim: #8888aa;
       --border: #2a2a4a;
@@ -30,12 +31,12 @@
     /* Header */
     .header {
       background: linear-gradient(135deg, #1a1a3e 0%, #2a1a4e 50%, #1a2a3e 100%);
-      padding: 40px 20px 30px;
+      padding: 30px 20px 20px;
       text-align: center;
       border-bottom: 1px solid var(--border);
     }
     .header h1 {
-      font-size: 28px;
+      font-size: 26px;
       font-weight: 900;
       background: linear-gradient(135deg, var(--primary-light), var(--accent2));
       -webkit-background-clip: text;
@@ -44,16 +45,40 @@
     }
     .header p {
       color: var(--text-dim);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    /* Mode Tabs */
+    .mode-tabs {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      margin-top: 14px;
+    }
+    .mode-tab {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 22px;
+      color: var(--text-dim);
       font-size: 14px;
-      margin-top: 8px;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .mode-tab:hover { background: var(--card-hover); color: var(--text); }
+    .mode-tab.active {
+      background: linear-gradient(135deg, rgba(108,99,255,0.3), rgba(108,99,255,0.1));
+      border-color: var(--primary);
+      color: #fff;
     }
     /* Controls */
     .controls {
       max-width: 900px;
-      margin: 20px auto;
+      margin: 16px auto;
       padding: 0 16px;
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
@@ -61,25 +86,39 @@
       font-size: 13px;
       color: var(--text-dim);
       font-weight: 500;
+      white-space: nowrap;
     }
-    .controls select, .controls input {
+    .controls select, .controls input, .controls button {
       background: var(--card);
       color: var(--text);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 10px 14px;
+      padding: 9px 14px;
       font-size: 14px;
       font-family: inherit;
       outline: none;
       transition: all 0.2s;
       flex: 1;
-      min-width: 140px;
+      min-width: 100px;
     }
     .controls select:focus, .controls input:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
     }
     .controls select option { background: var(--card); color: var(--text); }
+    .controls .btn-action {
+      background: linear-gradient(135deg, var(--primary), #5a52e0);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+      flex: 0 0 auto;
+    }
+    .controls .btn-action:hover { background: var(--primary-light); }
+    .controls .btn-action:disabled { opacity: 0.4; cursor: default; }
+    /* Sections */
+    .section { display: none; }
+    .section.active { display: block; }
     /* Category Grid */
     .container {
       max-width: 980px;
@@ -87,10 +126,10 @@
       padding: 0 16px;
     }
     .section-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--text-dim);
-      margin: 24px 0 12px;
+      margin: 20px 0 10px;
       display: flex;
       align-items: center;
       gap: 8px;
@@ -98,48 +137,36 @@
     .section-title span { color: var(--primary-light); }
     .category-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 8px;
-      margin-bottom: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 6px;
+      margin-bottom: 16px;
     }
     .category-btn {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 10px;
-      padding: 10px 8px;
+      padding: 9px 6px;
       color: var(--text-dim);
       font-size: 12px;
       font-family: inherit;
       cursor: pointer;
       transition: all 0.2s;
       text-align: center;
-      line-height: 1.4;
+      line-height: 1.3;
     }
-    .category-btn:hover {
-      background: var(--card-hover);
-      border-color: var(--primary);
-      color: var(--text);
-      transform: translateY(-1px);
-    }
-    .category-btn.active {
-      background: linear-gradient(135deg, rgba(108,99,255,0.3), rgba(108,99,255,0.1));
-      border-color: var(--primary);
-      color: #fff;
-      box-shadow: 0 0 20px rgba(108,99,255,0.15);
-    }
+    .category-btn:hover { background: var(--card-hover); border-color: var(--primary); color: var(--text); transform: translateY(-1px); }
+    .category-btn.active { background: linear-gradient(135deg, rgba(108,99,255,0.3), rgba(108,99,255,0.1)); border-color: var(--primary); color: #fff; box-shadow: 0 0 20px rgba(108,99,255,0.15); }
     /* Word Display */
-    .word-area {
-      margin: 16px 0 40px;
-    }
+    .word-area { margin: 14px 0 30px; position: relative; }
     .word-card {
       background: linear-gradient(145deg, #1e1e38, #16162a);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 40px 30px;
+      padding: 36px 28px;
       text-align: center;
       position: relative;
       overflow: hidden;
-      min-height: 260px;
+      min-height: 240px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -148,173 +175,145 @@
     .word-card::before {
       content: '';
       position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
       background: radial-gradient(circle at 50% 50%, rgba(108,99,255,0.04) 0%, transparent 60%);
       pointer-events: none;
     }
-    .word-level {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      background: rgba(108,99,255,0.2);
-      color: var(--primary-light);
-      font-size: 11px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-weight: 500;
-    }
-    .word-number {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      color: var(--text-dim);
-      font-size: 11px;
-      opacity: 0.5;
-    }
-    .word-indigenous {
-      font-size: 42px;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-      text-shadow: 0 0 30px rgba(108,99,255,0.2);
-    }
-    .word-chinese {
-      font-size: 28px;
-      font-weight: 500;
-      color: var(--accent2);
-      margin-bottom: 8px;
-    }
-    .word-english {
-      font-size: 14px;
-      color: var(--text-dim);
-      font-style: italic;
-    }
-    .word-memo {
-      font-size: 13px;
-      color: var(--accent3);
-      margin-top: 10px;
-      opacity: 0.8;
-    }
-    .word-actions {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
+    .word-level { position: absolute; top: 14px; left: 14px; background: rgba(108,99,255,0.2); color: var(--primary-light); font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 500; }
+    .word-number { position: absolute; top: 14px; right: 14px; color: var(--text-dim); font-size: 11px; opacity: 0.5; }
+    .word-indigenous { font-size: 40px; font-weight: 700; color: #fff; letter-spacing: 1px; margin-bottom: 4px; text-shadow: 0 0 30px rgba(108,99,255,0.2); }
+    .word-chinese { font-size: 26px; font-weight: 500; color: var(--accent2); margin-bottom: 6px; }
+    .word-english { font-size: 14px; color: var(--text-dim); font-style: italic; }
+    .word-memo { font-size: 13px; color: var(--accent3); margin-top: 8px; opacity: 0.8; }
+    .word-actions { display: flex; gap: 12px; margin-top: 16px; }
     .btn-audio {
-      background: var(--primary);
-      border: none;
-      border-radius: 50%;
-      width: 52px;
-      height: 52px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-size: 22px;
-      color: #fff;
+      background: var(--primary); border: none; border-radius: 50%; width: 48px; height: 48px;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+      transition: all 0.2s; font-size: 20px; color: #fff;
       box-shadow: 0 4px 15px rgba(108,99,255,0.3);
     }
     .btn-audio:hover { transform: scale(1.1); background: var(--primary-light); }
     .btn-audio:active { transform: scale(0.95); }
     .btn-audio.playing { animation: pulse 1s infinite; }
-    @keyframes pulse {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,0.5); }
-      50% { box-shadow: 0 0 0 15px rgba(108,99,255,0); }
-    }
-    /* Navigation */
-    .word-nav {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 20px;
-      margin-top: 16px;
-    }
-    .nav-btn {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 20px;
-      color: var(--text);
-      font-size: 16px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
+    @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(108,99,255,0.5); } 50% { box-shadow: 0 0 0 15px rgba(108,99,255,0); } }
+    .word-nav { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 14px; }
+    .nav-btn { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px 18px; color: var(--text); font-size: 14px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
     .nav-btn:hover { background: var(--card-hover); border-color: var(--primary); }
     .nav-btn:disabled { opacity: 0.3; cursor: default; }
-    .nav-count {
-      color: var(--text-dim);
-      font-size: 13px;
-      min-width: 60px;
-      text-align: center;
-    }
-    /* Loading Overlay */
-    .loading-overlay {
-      display: none;
-      position: absolute;
-      inset: 0;
-      background: rgba(15,15,26,0.85);
-      border-radius: 20px;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      z-index: 10;
-      gap: 16px;
-    }
-    .loading-spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    .loading-text { color: var(--text-dim); font-size: 14px; }
-    .error-msg {
-      display: none;
-      padding: 40px;
-      text-align: center;
-      color: var(--accent);
-      font-size: 15px;
-    }
-    .word-area { position: relative; }
+    .nav-count { color: var(--text-dim); font-size: 13px; min-width: 56px; text-align: center; }
+    /* Loading */
+    .loading-overlay { display: none; position: absolute; inset: 0; background: rgba(15,15,26,0.85); border-radius: 20px; align-items: center; justify-content: center; flex-direction: column; z-index: 10; gap: 14px; }
+    .loading-spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .loading-text { color: var(--text-dim); font-size: 13px; }
+    .error-msg { display: none; padding: 30px; text-align: center; color: var(--accent); font-size: 14px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    /* Status */
+    .status-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+    .status-info { font-size: 13px; color: var(--text-dim); }
+    .status-info strong { color: var(--text); }
+    .view-switch { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 7px 14px; color: var(--text-dim); font-size: 12px; cursor: pointer; transition: all 0.2s; font-family: inherit; }
+    .view-switch:hover { background: var(--card-hover); color: var(--text); }
     /* List View */
-    .list-view {
-      display: none;
-      margin: 16px 0 40px;
-    }
+    .list-view { display: none; margin: 14px 0 30px; }
     .list-view.active { display: block; }
-    .list-header {
-      display: grid;
-      grid-template-columns: 50px 1fr 1fr 50px;
-      gap: 8px;
-      padding: 10px 16px;
-      font-size: 12px;
-      color: var(--text-dim);
-      border-bottom: 1px solid var(--border);
-      font-weight: 500;
-    }
-    .list-item {
-      display: grid;
-      grid-template-columns: 50px 1fr 1fr 50px;
-      gap: 8px;
-      padding: 12px 16px;
-      border-bottom: 1px solid rgba(255,255,255,0.04);
-      cursor: pointer;
-      transition: background 0.15s;
-      align-items: center;
-    }
+    .list-header { display: grid; grid-template-columns: 40px 1fr 1fr 40px; gap: 6px; padding: 8px 14px; font-size: 11px; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 500; }
+    .list-item { display: grid; grid-template-columns: 40px 1fr 1fr 40px; gap: 6px; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); cursor: pointer; transition: background 0.15s; align-items: center; }
     .list-item:hover { background: var(--card-hover); }
     .list-item.active { background: rgba(108,99,255,0.1); border-left: 3px solid var(--primary); }
     .list-item .li-level { font-size: 11px; color: var(--primary-light); }
-    .list-item .li-ab { font-size: 15px; font-weight: 500; color: #fff; }
-    .list-item .li-ch { font-size: 14px; color: var(--accent2); }
-    .list-item .li-sound {
+    .list-item .li-ab { font-size: 14px; font-weight: 500; color: #fff; }
+    .list-item .li-ch { font-size: 13px; color: var(--accent2); }
+    .list-item .li-sound { background: none; border: 1px solid var(--border); border-radius: 6px; width: 30px; height: 30px; cursor: pointer; color: var(--text-dim); font-size: 14px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .list-item .li-sound:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    /* ============ TRANSLATE SECTION ============ */
+    .translate-area { max-width: 700px; margin: 0 auto; padding: 20px 0; }
+    .translate-input-area {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+    .translate-input-area textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 18px;
+      font-family: inherit;
+      resize: vertical;
+      min-height: 80px;
+      outline: none;
+      line-height: 1.6;
+    }
+    .translate-input-area textarea::placeholder { color: var(--text-dim); opacity: 0.6; }
+    .translate-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .btn-translate {
+      background: linear-gradient(135deg, var(--primary), #5a52e0);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 30px;
+      font-size: 16px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-translate:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(108,99,255,0.3); }
+    .btn-translate:disabled { opacity: 0.4; cursor: default; transform: none; box-shadow: none; }
+    .dict-status { font-size: 12px; color: var(--text-dim); }
+    .dict-status.loaded { color: var(--accent3); }
+    .dict-status .dict-count { color: var(--accent2); font-weight: 700; }
+    /* Translation Result */
+    .trans-result {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      min-height: 100px;
+    }
+    .trans-result:empty { display: none; }
+    .trans-word-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .trans-word-row:last-child { border-bottom: none; }
+    .trans-word-ch {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--accent2);
+      min-width: 60px;
+    }
+    .trans-word-arrow {
+      color: var(--text-dim);
+      font-size: 14px;
+      opacity: 0.5;
+    }
+    .trans-word-ab {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      flex: 1;
+    }
+    .trans-word-ab.unmatched {
+      color: var(--text-dim);
+      opacity: 0.5;
+      font-weight: 400;
+      font-style: italic;
+    }
+    .trans-word-audio {
       background: none;
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -322,70 +321,65 @@
       height: 34px;
       cursor: pointer;
       color: var(--text-dim);
-      font-size: 16px;
+      font-size: 14px;
       transition: all 0.2s;
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
-    .list-item .li-sound:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
-    /* Switch view button */
-    .view-switch {
-      background: var(--card);
-      border: 1px solid var(--border);
+    .trans-word-audio:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    /* Full translation sentence */
+    .trans-sentence {
+      margin-top: 16px;
+      padding: 16px;
+      background: rgba(108,99,255,0.08);
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 12px;
+    }
+    .trans-sentence-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .trans-sentence-text {
+      font-size: 20px;
+      font-weight: 700;
+      color: #fff;
+      line-height: 1.8;
+      word-break: break-all;
+    }
+    .trans-sentence-text .ts-word { display: inline; }
+    .trans-sentence-text .ts-word.matched { color: var(--primary-light); }
+    .trans-sentence-text .ts-word.unmatched { color: var(--text-dim); opacity: 0.4; }
+    .trans-note {
+      margin-top: 12px;
+      padding: 12px 16px;
+      background: rgba(255,107,107,0.08);
+      border: 1px solid rgba(255,107,107,0.15);
       border-radius: 10px;
-      padding: 8px 16px;
-      color: var(--text-dim);
       font-size: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-    }
-    .view-switch:hover { background: var(--card-hover); color: var(--text); }
-    /* Loading */
-    .loading {
-      padding: 60px;
-      text-align: center;
       color: var(--text-dim);
+      line-height: 1.6;
     }
-    .loading::after {
-      content: '';
-      display: block;
-      width: 30px;
-      height: 30px;
-      margin: 20px auto;
-      border: 3px solid var(--border);
-      border-top-color: var(--primary);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    /* Status */
-    .status-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .status-info {
-      font-size: 13px;
-      color: var(--text-dim);
-    }
-    .status-info strong { color: var(--text); }
     /* Scrollbar */
     ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
     /* Responsive */
     @media (max-width: 600px) {
-      .header h1 { font-size: 22px; }
-      .word-indigenous { font-size: 30px; }
-      .word-chinese { font-size: 22px; }
-      .category-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+      .header h1 { font-size: 20px; }
+      .word-indigenous { font-size: 28px; }
+      .word-chinese { font-size: 20px; }
+      .category-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
       .controls { flex-direction: column; }
-      .controls select, .controls input { width: 100%; }
-      .list-header, .list-item { grid-template-columns: 40px 1fr 1fr 40px; font-size: 12px; }
+      .controls select, .controls input, .controls .btn-action { width: 100%; }
+      .list-header, .list-item { grid-template-columns: 32px 1fr 1fr 32px; font-size: 11px; }
+      .trans-word-ch { min-width: 40px; font-size: 15px; }
+      .trans-word-ab { font-size: 15px; }
+      .translate-input-area textarea { font-size: 16px; }
     }
   </style>
 </head>
@@ -393,62 +387,81 @@
 
 <div class="header">
   <h1>🗣️ 族語翻譯互動學習</h1>
-  <p>選擇族語 → 瀏覽分類 → 點擊單詞聽發音・學翻譯</p>
-</div>
-
-<div class="controls">
-  <label>🗂️ 族語</label>
-  <select id="langSelect"></select>
-  <label>📍 方言</label>
-  <select id="dialectSelect"></select>
-  <label>🔍 搜尋</label>
-  <input id="searchInput" type="text" placeholder="中文字或族語關鍵字...">
-</div>
-
-<div class="container">
-  <div class="section-title">
-    📂 分類目錄 <span id="cateCount"></span>
+  <p>學習族語單詞 · 輸入中文逐詞翻譯</p>
+  <div class="mode-tabs">
+    <button class="mode-tab active" data-mode="learn">📖 學習</button>
+    <button class="mode-tab" data-mode="translate">🔤 翻譯</button>
   </div>
-  <div class="category-grid" id="categoryGrid"></div>
+</div>
 
-  <div class="status-bar">
-    <div class="status-info" id="statusInfo">選擇分類開始學習 ✨</div>
-    <div>
+<!-- ========== LEARN MODE ========== -->
+<div class="section active" id="sectionLearn">
+  <div class="controls">
+    <label>🗂️ 族語</label>
+    <select id="langSelect"></select>
+    <label>📍 方言</label>
+    <select id="dialectSelect"></select>
+    <label>🔍 搜尋</label>
+    <input id="searchInput" type="text" placeholder="中文字或族語關鍵字...">
+  </div>
+  <div class="container">
+    <div class="section-title">📂 分類目錄 <span id="cateCount"></span></div>
+    <div class="category-grid" id="categoryGrid"></div>
+    <div class="status-bar">
+      <div class="status-info" id="statusInfo">選擇分類開始學習 ✨</div>
       <button class="view-switch" id="viewSwitch">📋 列表模式</button>
     </div>
-  </div>
-
-  <!-- Card View -->
-  <div class="word-area" id="wordArea">
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">載入中...</div>
-    </div>
-    <div class="error-msg" id="errorMsg"></div>
-    <div class="word-card" id="wordCard">
-      <div class="word-level" id="wordLevel"></div>
-      <div class="word-number" id="wordNumber"></div>
-      <div class="word-indigenous" id="wordAb">—</div>
-      <div class="word-chinese" id="wordCh">請選擇分類</div>
-      <div class="word-english" id="wordEn"></div>
-      <div class="word-memo" id="wordMemo"></div>
-      <div class="word-actions">
-        <button class="btn-audio" id="btnAudio">▶</button>
+    <div class="word-area" id="wordArea">
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">載入中...</div>
+      </div>
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="word-card" id="wordCard">
+        <div class="word-level" id="wordLevel"></div>
+        <div class="word-number" id="wordNumber"></div>
+        <div class="word-indigenous" id="wordAb">—</div>
+        <div class="word-chinese" id="wordCh">請選擇分類</div>
+        <div class="word-english" id="wordEn"></div>
+        <div class="word-memo" id="wordMemo"></div>
+        <div class="word-actions">
+          <button class="btn-audio" id="btnAudio">▶</button>
+        </div>
+      </div>
+      <div class="word-nav">
+        <button class="nav-btn" id="prevBtn">◀ 上一筆</button>
+        <span class="nav-count" id="navCount">0 / 0</span>
+        <button class="nav-btn" id="nextBtn">下一筆 ▶</button>
       </div>
     </div>
-    <div class="word-nav">
-      <button class="nav-btn" id="prevBtn">◀ 上一筆</button>
-      <span class="nav-count" id="navCount">0 / 0</span>
-      <button class="nav-btn" id="nextBtn">下一筆 ▶</button>
+    <div class="list-view" id="listView">
+      <div class="list-header"><span>級別</span><span>族語</span><span>中文</span><span>音</span></div>
+      <div id="listBody"></div>
     </div>
   </div>
+</div>
 
-  <!-- List View -->
-  <div class="list-view" id="listView">
-    <div class="list-header">
-      <span>級別</span><span>族語</span><span>中文</span><span>音</span>
+<!-- ========== TRANSLATE MODE ========== -->
+<div class="section" id="sectionTranslate">
+  <div class="controls">
+    <label>🗂️ 族語</label>
+    <select id="langSelect2"></select>
+    <label>📍 方言</label>
+    <select id="dialectSelect2"></select>
+    <button class="btn-action" id="loadDictBtn">📚 載入詞庫</button>
+  </div>
+  <div class="container">
+    <div class="translate-area">
+      <div class="dict-status" id="dictStatus">尚未載入詞庫，請先按「載入詞庫」📚</div>
+      <div class="translate-input-area">
+        <textarea id="transInput" placeholder="輸入中文句子，例如：我的眼睛很大&#10;&#10;提示：逐詞查詢，無文法變化"></textarea>
+      </div>
+      <div class="translate-actions">
+        <button class="btn-translate" id="btnTranslate" disabled>🔤 翻譯</button>
+        <span id="dictInfo"></span>
+      </div>
+      <div class="trans-result" id="transResult"></div>
     </div>
-    <div id="listBody"></div>
   </div>
 </div>
 
@@ -459,69 +472,27 @@
 // DATA
 // ============================================================
 const LANGUAGES = [
-  { lid: "1",  layer: 1, lch: "阿美語" },
-  { lid: "2",  layer: 1, lch: "泰雅語" },
-  { lid: "3",  layer: 1, lch: "賽夏語" },
-  { lid: "4",  layer: 1, lch: "邵語" },
-  { lid: "5",  layer: 1, lch: "賽德克語" },
-  { lid: "6",  layer: 1, lch: "布農語" },
-  { lid: "7",  layer: 1, lch: "排灣語" },
-  { lid: "8",  layer: 1, lch: "魯凱語" },
-  { lid: "9",  layer: 2, lch: "太魯閣語" },
-  { lid: "10", layer: 2, lch: "噶瑪蘭語" },
-  { lid: "11", layer: 2, lch: "鄒語" },
-  { lid: "12", layer: 2, lch: "卑南語" },
-  { lid: "13", layer: 2, lch: "雅美語" },
-  { lid: "14", layer: 2, lch: "撒奇萊雅語" },
-  { lid: "15", layer: 2, lch: "卡那卡那富語" },
-  { lid: "16", layer: 2, lch: "拉阿魯哇語" },
+  { lid: "1",  layer: 1, lch: "阿美語" }, { lid: "2",  layer: 1, lch: "泰雅語" },
+  { lid: "3",  layer: 1, lch: "賽夏語" }, { lid: "4",  layer: 1, lch: "邵語" },
+  { lid: "5",  layer: 1, lch: "賽德克語" }, { lid: "6",  layer: 1, lch: "布農語" },
+  { lid: "7",  layer: 1, lch: "排灣語" }, { lid: "8",  layer: 1, lch: "魯凱語" },
+  { lid: "9",  layer: 2, lch: "太魯閣語" }, { lid: "10", layer: 2, lch: "噶瑪蘭語" },
+  { lid: "11", layer: 2, lch: "鄒語" }, { lid: "12", layer: 2, lch: "卑南語" },
+  { lid: "13", layer: 2, lch: "雅美語" }, { lid: "14", layer: 2, lch: "撒奇萊雅語" },
+  { lid: "15", layer: 2, lch: "卡那卡那富語" }, { lid: "16", layer: 2, lch: "拉阿魯哇語" },
 ];
-
 const DIALECTS = [
-  { lid: "1",  did: "1",  dch: "南勢阿美語" },
-  { lid: "1",  did: "2",  dch: "秀姑巒阿美語" },
-  { lid: "1",  did: "3",  dch: "海岸阿美語" },
-  { lid: "1",  did: "4",  dch: "馬蘭阿美語" },
-  { lid: "1",  did: "5",  dch: "恆春阿美語" },
-  { lid: "2",  did: "6",  dch: "賽考利克泰雅語" },
-  { lid: "2",  did: "7",  dch: "澤敖利泰雅語" },
-  { lid: "2",  did: "8",  dch: "汶水泰雅語" },
-  { lid: "2",  did: "9",  dch: "萬大泰雅語" },
-  { lid: "2",  did: "10", dch: "四季泰雅語" },
-  { lid: "2",  did: "11", dch: "宜蘭澤敖利泰雅語" },
-  { lid: "3",  did: "13", dch: "賽夏語" },
-  { lid: "4",  did: "14", dch: "邵語" },
-  { lid: "5",  did: "15", dch: "都達賽德克語" },
-  { lid: "5",  did: "16", dch: "德固達雅賽德克語" },
-  { lid: "5",  did: "17", dch: "德鹿谷賽德克語" },
-  { lid: "6",  did: "18", dch: "卓群布農語" },
-  { lid: "6",  did: "19", dch: "卡群布農語" },
-  { lid: "6",  did: "20", dch: "丹群布農語" },
-  { lid: "6",  did: "21", dch: "巒群布農語" },
-  { lid: "6",  did: "22", dch: "郡群布農語" },
-  { lid: "7",  did: "23", dch: "東排灣語" },
-  { lid: "7",  did: "24", dch: "北排灣語" },
-  { lid: "7",  did: "25", dch: "中排灣語" },
-  { lid: "7",  did: "26", dch: "南排灣語" },
-  { lid: "8",  did: "27", dch: "東魯凱語" },
-  { lid: "8",  did: "28", dch: "霧台魯凱語" },
-  { lid: "8",  did: "29", dch: "大武魯凱語" },
-  { lid: "8",  did: "30", dch: "多納魯凱語" },
-  { lid: "8",  did: "31", dch: "茂林魯凱語" },
-  { lid: "8",  did: "32", dch: "萬山魯凱語" },
-  { lid: "9",  did: "33", dch: "太魯閣語" },
-  { lid: "10", did: "34", dch: "噶瑪蘭語" },
-  { lid: "11", did: "35", dch: "鄒語" },
-  { lid: "12", did: "38", dch: "南王卑南語" },
-  { lid: "12", did: "39", dch: "知本卑南語" },
-  { lid: "12", did: "40", dch: "西群卑南語" },
-  { lid: "12", did: "41", dch: "建和卑南語" },
-  { lid: "13", did: "42", dch: "雅美語" },
-  { lid: "14", did: "43", dch: "撒奇萊雅語" },
-  { lid: "15", did: "36", dch: "卡那卡那富語" },
-  { lid: "16", did: "37", dch: "拉阿魯哇語" },
+  { lid: "1",  did: "1",  dch: "南勢阿美語" }, { lid: "1",  did: "2",  dch: "秀姑巒阿美語" }, { lid: "1",  did: "3",  dch: "海岸阿美語" }, { lid: "1",  did: "4",  dch: "馬蘭阿美語" }, { lid: "1",  did: "5",  dch: "恆春阿美語" },
+  { lid: "2",  did: "6",  dch: "賽考利克泰雅語" }, { lid: "2",  did: "7",  dch: "澤敖利泰雅語" }, { lid: "2",  did: "8",  dch: "汶水泰雅語" }, { lid: "2",  did: "9",  dch: "萬大泰雅語" }, { lid: "2",  did: "10", dch: "四季泰雅語" }, { lid: "2",  did: "11", dch: "宜蘭澤敖利泰雅語" },
+  { lid: "3",  did: "13", dch: "賽夏語" }, { lid: "4",  did: "14", dch: "邵語" },
+  { lid: "5",  did: "15", dch: "都達賽德克語" }, { lid: "5",  did: "16", dch: "德固達雅賽德克語" }, { lid: "5",  did: "17", dch: "德鹿谷賽德克語" },
+  { lid: "6",  did: "18", dch: "卓群布農語" }, { lid: "6",  did: "19", dch: "卡群布農語" }, { lid: "6",  did: "20", dch: "丹群布農語" }, { lid: "6",  did: "21", dch: "巒群布農語" }, { lid: "6",  did: "22", dch: "郡群布農語" },
+  { lid: "7",  did: "23", dch: "東排灣語" }, { lid: "7",  did: "24", dch: "北排灣語" }, { lid: "7",  did: "25", dch: "中排灣語" }, { lid: "7",  did: "26", dch: "南排灣語" },
+  { lid: "8",  did: "27", dch: "東魯凱語" }, { lid: "8",  did: "28", dch: "霧台魯凱語" }, { lid: "8",  did: "29", dch: "大武魯凱語" }, { lid: "8",  did: "30", dch: "多納魯凱語" }, { lid: "8",  did: "31", dch: "茂林魯凱語" }, { lid: "8",  did: "32", dch: "萬山魯凱語" },
+  { lid: "9",  did: "33", dch: "太魯閣語" }, { lid: "10", did: "34", dch: "噶瑪蘭語" }, { lid: "11", did: "35", dch: "鄒語" },
+  { lid: "12", did: "38", dch: "南王卑南語" }, { lid: "12", did: "39", dch: "知本卑南語" }, { lid: "12", did: "40", dch: "西群卑南語" }, { lid: "12", did: "41", dch: "建和卑南語" },
+  { lid: "13", did: "42", dch: "雅美語" }, { lid: "14", did: "43", dch: "撒奇萊雅語" }, { lid: "15", did: "36", dch: "卡那卡那富語" }, { lid: "16", did: "37", dch: "拉阿魯哇語" },
 ];
-
 const CATEGORIES = [
   "01數字計量","02代名詞、指示詞","03疑問詞","04親屬稱謂",
   "05人物、身分","06身體部位","07動物(含昆蟲)","08植物",
@@ -530,8 +501,7 @@ const CATEGORIES = [
   "18織布服飾","19傳統文化與習俗","20交通","21食物(非植物)",
   "22顏色","23聲音","24抽象名詞","25行動","26肢體動作",
   "27飲食","28認知感官","29情緒思維","30生活作息",
-  "31生老病死傷","32特徵","33助動詞","34其他","35否定詞",
-  "36助詞或其他"
+  "31生老病死傷","32特徵","33助動詞","34其他","35否定詞","36助詞或其他"
 ];
 
 // ============================================================
@@ -542,73 +512,108 @@ let state = {
   words: [],
   currentIndex: 0,
   category: "",
-  viewMode: "card", // card | list
+  viewMode: "card",
+};
+let dictState = {
+  did: "1",
+  dictionary: {},    // ch → {ab, n, snda}
+  reverseDict: {},   // ab → ch
+  totalWords: 0,
+  loaded: false,
+  loading: false,
 };
 
 // ============================================================
 // DOM REFS
 // ============================================================
 const $ = id => document.getElementById(id);
-const langSel = $("langSelect");
-const dialSel = $("dialectSelect");
+const langSel = $("langSelect"), dialSel = $("dialectSelect");
+const langSel2 = $("langSelect2"), dialSel2 = $("dialectSelect2");
 const searchInput = $("searchInput");
-const cateGrid = $("categoryGrid");
-const cateCount = $("cateCount");
+const cateGrid = $("categoryGrid"), cateCount = $("cateCount");
 const statusInfo = $("statusInfo");
 const wordArea = $("wordArea");
-const wordCard = $("wordCard");
-const wordLevel = $("wordLevel");
-const wordNumber = $("wordNumber");
-const wordAb = $("wordAb");
-const wordCh = $("wordCh");
-const wordEn = $("wordEn");
-const wordMemo = $("wordMemo");
-const btnAudio = $("btnAudio");
-const navCount = $("navCount");
-const prevBtn = $("prevBtn");
-const nextBtn = $("nextBtn");
-const viewSwitch = $("viewSwitch");
-const listView = $("listView");
-const listBody = $("listBody");
+const wordCard = $("wordCard"), wordLevel = $("wordLevel"), wordNumber = $("wordNumber");
+const wordAb = $("wordAb"), wordCh = $("wordCh"), wordEn = $("wordEn"), wordMemo = $("wordMemo");
+const btnAudio = $("btnAudio"), navCount = $("navCount");
+const prevBtn = $("prevBtn"), nextBtn = $("nextBtn");
+const viewSwitch = $("viewSwitch"), listView = $("listView"), listBody = $("listBody");
 const audioEl = $("audioPlayer");
+const secLearn = $("sectionLearn"), secTrans = $("sectionTranslate");
+const transInput = $("transInput"), btnTranslate = $("btnTranslate");
+const transResult = $("transResult"), dictStatus = $("dictStatus");
+const dictInfo = $("dictInfo"), loadDictBtn = $("loadDictBtn");
 
 // ============================================================
 // INIT
 // ============================================================
 function init() {
-  // Populate languages
-  LANGUAGES.forEach(l => {
-    const opt = document.createElement("option");
-    opt.value = l.lid;
-    opt.textContent = l.lch;
-    langSel.appendChild(opt);
+  [langSel, langSel2].forEach(sel => {
+    LANGUAGES.forEach(l => {
+      const opt = document.createElement("option");
+      opt.value = l.lid; opt.textContent = l.lch;
+      sel.appendChild(opt);
+    });
+    sel.value = "1";
   });
-  langSel.value = "1";
-  updateDialects("1");
-  dialSel.value = "1";
+  [dialSel, dialSel2].forEach(sel => { updateDialects("1", sel); sel.value = "1"; });
   renderCategories();
+  // Mode tabs
+  document.querySelectorAll(".mode-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".mode-tab").forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      secLearn.classList.toggle("active", tab.dataset.mode === "learn");
+      secTrans.classList.toggle("active", tab.dataset.mode === "translate");
+    });
+  });
+  // Language sync between tabs
+  langSel.addEventListener("change", syncLangFromLearn);
+  dialSel.addEventListener("change", syncLangFromLearn);
+  langSel2.addEventListener("change", syncLangFromTranslate);
+  dialSel2.addEventListener("change", syncLangFromTranslate);
+  // Translate events
+  loadDictBtn.addEventListener("click", loadDictionary);
+  btnTranslate.addEventListener("click", doTranslate);
+  transInput.addEventListener("input", () => {
+    btnTranslate.disabled = !dictState.loaded || !transInput.value.trim();
+  });
+  transInput.addEventListener("keydown", e => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doTranslate(); }
+  });
 }
 
-function updateDialects(lid) {
-  dialSel.innerHTML = "";
-  const filtered = DIALECTS.filter(d => d.lid === lid);
-  filtered.forEach(d => {
+function updateDialects(lid, sel) {
+  sel.innerHTML = "";
+  DIALECTS.filter(d => d.lid === lid).forEach(d => {
     const opt = document.createElement("option");
-    opt.value = d.did;
-    opt.textContent = d.dch;
-    dialSel.appendChild(opt);
+    opt.value = d.did; opt.textContent = d.dch;
+    sel.appendChild(opt);
   });
+}
+function syncLangFromLearn() {
+  const lid = langSel.value, did = dialSel.value;
+  langSel2.value = lid; updateDialects(lid, dialSel2); dialSel2.value = did;
+  state.did = did;
+}
+function syncLangFromTranslate() {
+  const lid = langSel2.value, did = dialSel2.value;
+  langSel.value = lid; updateDialects(lid, dialSel); dialSel.value = did;
+  state.did = did;
+  // Invalidate dictionary if dialect changed
+  if (dictState.did !== did) { dictState.loaded = false; dictState.dictionary = {}; dictStatus.textContent = "📚 方言已變更，請重新載入詞庫"; dictStatus.className = "dict-status"; btnTranslate.disabled = true; loadDictBtn.textContent = "📚 載入詞庫"; }
+  dictState.did = did;
 }
 
 // ============================================================
-// RENDER CATEGORIES
+// LEARN MODE
 // ============================================================
 function renderCategories() {
   cateGrid.innerHTML = "";
   CATEGORIES.forEach(cat => {
     const btn = document.createElement("button");
     btn.className = "category-btn" + (cat === state.category ? " active" : "");
-    btn.textContent = cat.replace(/^\d{2}/, ""); // strip "01" prefix for display
+    btn.textContent = cat.replace(/^\d{2}/, "");
     btn.title = cat;
     btn.dataset.cate = cat;
     btn.addEventListener("click", () => selectCategory(cat));
@@ -616,238 +621,288 @@ function renderCategories() {
   });
   cateCount.textContent = `（${CATEGORIES.length} 類）`;
 }
+function highlightCategory(cat) { document.querySelectorAll(".category-btn").forEach(b => b.classList.toggle("active", b.dataset.cate === cat)); }
 
-function highlightCategory(cat) {
-  document.querySelectorAll(".category-btn").forEach(b => {
-    b.classList.toggle("active", b.dataset.cate === cat);
-  });
-}
-
-// ============================================================
-// SELECT CATEGORY → FETCH WORDS
-// ============================================================
 async function selectCategory(cat) {
-  state.category = cat;
-  state.currentIndex = 0;
-  highlightCategory(cat);
-
-  // Show loading overlay
-  document.getElementById("loadingOverlay").style.display = "flex";
+  state.category = cat; state.currentIndex = 0; highlightCategory(cat);
+  $("loadingOverlay").style.display = "flex";
   statusInfo.textContent = `📥 正在讀取「${cat.replace(/^\d{2}/, "")}」...`;
-
   try {
     const url = `https://web.klokah.tw/vocabulary/php/getWords.php?did=${state.did}&cate=${encodeURIComponent(cat)}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    state.words = data;
+    state.words = await res.json();
     renderWordView();
-    statusInfo.innerHTML = `✅ <strong>${cat.replace(/^\d{2}/, "")}</strong> · 共 <strong>${data.length}</strong> 筆單詞`;
+    statusInfo.innerHTML = `✅ <strong>${cat.replace(/^\d{2}/, "")}</strong> · 共 <strong>${state.words.length}</strong> 筆單詞`;
   } catch (e) {
-    document.getElementById("loadingOverlay").style.display = "none";
-    document.getElementById("errorMsg").style.display = "block";
-    document.getElementById("errorMsg").textContent = `❌ 讀取失敗：${e.message}`;
+    $("loadingOverlay").style.display = "none";
+    $("errorMsg").style.display = "block"; $("errorMsg").textContent = `❌ 讀取失敗：${e.message}`;
     statusInfo.textContent = "❌ 讀取失敗";
   }
-  document.getElementById("loadingOverlay").style.display = "none";
+  $("loadingOverlay").style.display = "none";
 }
 
-// ============================================================
-// RENDER WORD (Card + List)
-// ============================================================
 function renderWordView() {
   const words = state.words;
   if (!words || words.length === 0) {
-    document.getElementById("errorMsg").style.display = "block";
-    document.getElementById("errorMsg").textContent = "📭 此分類尚無資料";
+    $("errorMsg").style.display = "block"; $("errorMsg").textContent = "📭 此分類尚無資料";
     wordArea.querySelector(".word-card").style.display = "none";
     wordArea.querySelector(".word-nav").style.display = "none";
-    listView.classList.remove("active");
-    return;
+    listView.classList.remove("active"); return;
   }
-  document.getElementById("errorMsg").style.display = "none";
+  $("errorMsg").style.display = "none";
   wordArea.querySelector(".word-card").style.display = "";
   wordArea.querySelector(".word-nav").style.display = "";
-  // Card
-  // Card
-  renderCard();
-  // List
-  renderList();
-
-  // Show/hide views
-  if (state.viewMode === "card") {
-    wordArea.style.display = "block";
-    listView.classList.remove("active");
-  } else {
-    wordArea.style.display = "none";
-    listView.classList.add("active");
-  }
+  renderCard(); renderList();
+  if (state.viewMode === "card") { wordArea.style.display = "block"; listView.classList.remove("active"); }
+  else { wordArea.style.display = "none"; listView.classList.add("active"); }
 }
-
 function renderCard() {
   const w = state.words[state.currentIndex];
   if (!w) return;
-
   wordLevel.textContent = w.lv || "—";
   wordNumber.textContent = w.n || "";
   wordAb.textContent = w.ab || "—";
   wordCh.textContent = w.ch || "—";
   wordEn.textContent = w.en ? `🏴 ${w.en}` : "";
   wordMemo.textContent = w.memo || "";
-
   navCount.textContent = `${state.currentIndex + 1} / ${state.words.length}`;
   prevBtn.disabled = state.currentIndex === 0;
   nextBtn.disabled = state.currentIndex >= state.words.length - 1;
-
-  // Audio
-  if (w.snda && w.n) {
-    const audioUrl = `https://web.klokah.tw/vocabulary/audio/word/${state.did}/${w.n}.wav`;
-    btnAudio.dataset.url = audioUrl;
-    btnAudio.style.opacity = "1";
-    btnAudio.style.cursor = "pointer";
-  } else {
-    btnAudio.dataset.url = "";
-    btnAudio.style.opacity = "0.3";
-    btnAudio.style.cursor = "default";
-  }
+  if (w.snda && w.n) { btnAudio.dataset.url = `https://web.klokah.tw/vocabulary/audio/word/${state.did}/${w.n}.wav`; btnAudio.style.opacity = "1"; btnAudio.style.cursor = "pointer"; }
+  else { btnAudio.dataset.url = ""; btnAudio.style.opacity = "0.3"; btnAudio.style.cursor = "default"; }
 }
-
 function renderList() {
   listBody.innerHTML = "";
   state.words.forEach((w, i) => {
     const div = document.createElement("div");
     div.className = "list-item" + (i === state.currentIndex ? " active" : "");
-    div.innerHTML = `
-      <span class="li-level">${w.lv || ""}</span>
-      <span class="li-ab">${w.ab || ""}</span>
-      <span class="li-ch">${w.ch || ""}</span>
-      <button class="li-sound" data-url="${w.snda && w.n ? `https://web.klokah.tw/vocabulary/audio/word/${state.did}/${w.n}.wav` : ''}">${w.snda ? '🔊' : '—'}</button>
-    `;
-    div.addEventListener("click", (e) => {
+    div.innerHTML = `<span class="li-level">${w.lv||""}</span><span class="li-ab">${w.ab||""}</span><span class="li-ch">${w.ch||""}</span><button class="li-sound" data-url="${w.snda&&w.n?`https://web.klokah.tw/vocabulary/audio/word/${state.did}/${w.n}.wav`:''}">${w.snda?'🔊':'—'}</button>`;
+    div.addEventListener("click", e => {
       if (e.target.closest(".li-sound")) return;
       state.currentIndex = i;
       if (state.viewMode === "list") renderCard();
       renderList();
       document.querySelector(".list-item.active")?.scrollIntoView({ block: "nearest" });
     });
-    const soundBtn = div.querySelector(".li-sound");
-    if (soundBtn) {
-      soundBtn.addEventListener("click", (e) => {
-        e.stopPropagation();
-        const url = soundBtn.dataset.url;
-        if (url) playAudio(url);
-      });
-    }
+    const sb = div.querySelector(".li-sound");
+    if (sb) sb.addEventListener("click", e => { e.stopPropagation(); if (sb.dataset.url) playAudio(sb.dataset.url); });
     listBody.appendChild(div);
   });
 }
-
-// ============================================================
-// AUDIO PLAYBACK
-// ============================================================
 function playAudio(url) {
   if (!url) return;
-  audioEl.src = url;
-  audioEl.play().catch(() => {});
-  btnAudio.classList.add("playing");
-  btnAudio.textContent = "⏹";
-  audioEl.onended = () => {
-    btnAudio.classList.remove("playing");
-    btnAudio.textContent = "▶";
-  };
+  audioEl.src = url; audioEl.play().catch(() => {});
+  btnAudio.classList.add("playing"); btnAudio.textContent = "⏹";
+  audioEl.onended = () => { btnAudio.classList.remove("playing"); btnAudio.textContent = "▶"; };
 }
-
-// ============================================================
-// SEARCH
-// ============================================================
 searchInput.addEventListener("input", () => {
   const q = searchInput.value.trim().toLowerCase();
-  if (!q) {
-    document.querySelectorAll(".list-item").forEach(el => el.style.display = "");
-    return;
-  }
-  document.querySelectorAll(".list-item").forEach(el => {
-    const text = el.textContent.toLowerCase();
-    el.style.display = text.includes(q) ? "" : "none";
-  });
+  document.querySelectorAll(".list-item").forEach(el => el.style.display = !q || el.textContent.toLowerCase().includes(q) ? "" : "none");
 });
-
-// ============================================================
-// EVENT LISTENERS
-// ============================================================
-
-// Language change
-langSel.addEventListener("change", () => {
-  const lid = langSel.value;
-  updateDialects(lid);
-  dialSel.value = DIALECTS.find(d => d.lid === lid).did;
-  state.did = dialSel.value;
-  state.words = [];
-  state.category = "";
-  renderCategories();
-  wordAb.textContent = "—";
-  wordCh.textContent = "選擇分類";
-  wordEn.textContent = "";
-  wordMemo.textContent = "";
-  wordLevel.textContent = "";
-  wordNumber.textContent = "";
-  navCount.textContent = "0 / 0";
-  statusInfo.textContent = `🌐 已切換至 ${langSel.options[langSel.selectedIndex].text}`;
-  listView.classList.remove("active");
-  wordArea.style.display = "block";
-});
-
-// Dialect change
-dialSel.addEventListener("change", () => {
-  state.did = dialSel.value;
-  if (state.category) selectCategory(state.category);
-  else {
-    statusInfo.textContent = `📍 已切換至 ${dialSel.options[dialSel.selectedIndex].text}`;
-  }
-});
-
-// Navigation
-prevBtn.addEventListener("click", () => {
-  if (state.currentIndex > 0) { state.currentIndex--; renderWordView(); }
-});
-nextBtn.addEventListener("click", () => {
-  if (state.currentIndex < state.words.length - 1) { state.currentIndex++; renderWordView(); }
-});
-
-// Audio button
+prevBtn.addEventListener("click", () => { if (state.currentIndex > 0) { state.currentIndex--; renderWordView(); } });
+nextBtn.addEventListener("click", () => { if (state.currentIndex < state.words.length - 1) { state.currentIndex++; renderWordView(); } });
 btnAudio.addEventListener("click", () => {
   if (btnAudio.dataset.url) {
-    if (audioEl.paused) {
-      playAudio(btnAudio.dataset.url);
-    } else {
-      audioEl.pause();
-      audioEl.currentTime = 0;
-      btnAudio.classList.remove("playing");
-      btnAudio.textContent = "▶";
-    }
+    if (audioEl.paused) playAudio(btnAudio.dataset.url);
+    else { audioEl.pause(); audioEl.currentTime = 0; btnAudio.classList.remove("playing"); btnAudio.textContent = "▶"; }
   }
 });
-
-// Keyboard shortcuts
-document.addEventListener("keydown", (e) => {
-  if (e.target.tagName === "INPUT") return;
+document.addEventListener("keydown", e => {
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
   if (e.key === "ArrowLeft") prevBtn.click();
   if (e.key === "ArrowRight") nextBtn.click();
   if (e.key === " ") { e.preventDefault(); btnAudio.click(); }
 });
-
-// View switch
 viewSwitch.addEventListener("click", () => {
-  if (state.viewMode === "card") {
-    state.viewMode = "list";
-    viewSwitch.textContent = "🃏 卡片模式";
-    renderWordView();
-  } else {
-    state.viewMode = "card";
-    viewSwitch.textContent = "📋 列表模式";
-    renderWordView();
-  }
+  if (state.viewMode === "card") { state.viewMode = "list"; viewSwitch.textContent = "🃏 卡片模式"; }
+  else { state.viewMode = "card"; viewSwitch.textContent = "📋 列表模式"; }
+  renderWordView();
 });
+langSel.addEventListener("change", () => {
+  const lid = langSel.value;
+  updateDialects(lid, dialSel);
+  dialSel.value = DIALECTS.find(d => d.lid === lid).did;
+  state.did = dialSel.value; state.words = []; state.category = "";
+  renderCategories();
+  wordAb.textContent = "—"; wordCh.textContent = "選擇分類"; wordEn.textContent = "";
+  wordMemo.textContent = ""; wordLevel.textContent = ""; wordNumber.textContent = "";
+  navCount.textContent = "0 / 0";
+  statusInfo.textContent = `🌐 已切換至 ${langSel.options[langSel.selectedIndex].text}`;
+  listView.classList.remove("active"); wordArea.style.display = "block";
+});
+dialSel.addEventListener("change", () => {
+  state.did = dialSel.value;
+  if (state.category) selectCategory(state.category);
+  else statusInfo.textContent = `📍 已切換至 ${dialSel.options[dialSel.selectedIndex].text}`;
+});
+
+// ============================================================
+// TRANSLATE MODE — DICTIONARY LOADER
+// ============================================================
+async function loadDictionary() {
+  const did = dialSel2.value;
+  if (dictState.loaded && dictState.did === did) { dictStatus.textContent = "✅ 詞庫已載入"; return; }
+  if (dictState.loading) return;
+  dictState.loading = true;
+  dictState.did = did;
+  dictState.dictionary = {};
+  dictState.reverseDict = {};
+  dictState.totalWords = 0;
+  loadDictBtn.disabled = true;
+  loadDictBtn.textContent = "⏳ 載入中...";
+  dictStatus.textContent = "⏳ 正在載入全部 36 類詞庫...";
+  dictStatus.className = "dict-status";
+  btnTranslate.disabled = true;
+
+  let total = 0, errors = 0;
+  for (let i = 0; i < CATEGORIES.length; i++) {
+    const cat = CATEGORIES[i];
+    dictStatus.textContent = `⏳ 載入中 ${i+1}/${CATEGORIES.length}：${cat.replace(/^\d{2}/, "")}`;
+    try {
+      const url = `https://web.klokah.tw/vocabulary/php/getWords.php?did=${did}&cate=${encodeURIComponent(cat)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      data.forEach(w => {
+        if (w.ch && w.ab) {
+          // Store by Chinese (handle duplicate ch → multiple ab)
+          if (!dictState.dictionary[w.ch]) dictState.dictionary[w.ch] = [];
+          dictState.dictionary[w.ch].push({ ab: w.ab, n: w.n, snda: w.snda, lv: w.lv });
+          dictState.reverseDict[w.ab] = w.ch;
+          total++;
+        }
+      });
+    } catch (e) {
+      errors++;
+    }
+  }
+  dictState.totalWords = total;
+  dictState.loaded = true;
+  dictState.loading = false;
+  loadDictBtn.disabled = false;
+  loadDictBtn.textContent = "📚 重新載入詞庫";
+  btnTranslate.disabled = false;
+  const dictSize = Object.keys(dictState.dictionary).length;
+  dictStatus.innerHTML = `✅ 已載入 <strong class="dict-count">${total}</strong> 筆單詞（<strong class="dict-count">${dictSize}</strong> 個不同中文詞）${errors > 0 ? `，${errors} 類失敗` : ""}`;
+  dictStatus.className = "dict-status loaded";
+  if (!transInput.value.trim()) btnTranslate.disabled = true;
+}
+
+// ============================================================
+// TRANSLATE MODE — CHINESE → INDIGENOUS
+// ============================================================
+function doTranslate() {
+  const text = transInput.value.trim();
+  if (!text || !dictState.loaded) return;
+  btnTranslate.disabled = true;
+  btnTranslate.textContent = "⏳ 翻譯中...";
+
+  // 1. Segment Chinese text using forward maximum matching
+  const segments = segmentChinese(text, dictState.dictionary);
+
+  // 2. Build result
+  let html = '';
+  let sentenceParts = [];
+  let matchedCount = 0, unmatchedCount = 0;
+
+  segments.forEach(seg => {
+    const ch = seg.word;
+    const matches = dictState.dictionary[ch];
+    if (matches && matches.length > 0) {
+      matchedCount++;
+      const m = matches[0]; // take first match
+      const audioUrl = m.snda && m.n ? `https://web.klokah.tw/vocabulary/audio/word/${dictState.did}/${m.n}.wav` : '';
+      html += `<div class="trans-word-row">
+        <span class="trans-word-ch">${escHtml(ch)}</span>
+        <span class="trans-word-arrow">→</span>
+        <span class="trans-word-ab">${escHtml(m.ab)}</span>
+        ${audioUrl ? `<button class="trans-word-audio" data-url="${audioUrl}">🔊</button>` : '<span class="trans-word-audio" style="opacity:0.2">—</span>'}
+      </div>`;
+      sentenceParts.push(`<span class="ts-word matched">${escHtml(m.ab)}</span>`);
+    } else {
+      unmatchedCount++;
+      html += `<div class="trans-word-row">
+        <span class="trans-word-ch">${escHtml(ch)}</span>
+        <span class="trans-word-arrow">→</span>
+        <span class="trans-word-ab unmatched">（無對應詞）</span>
+        <span class="trans-word-audio" style="opacity:0.2">—</span>
+      </div>`;
+      sentenceParts.push(`<span class="ts-word unmatched">${escHtml(ch)}</span>`);
+    }
+  });
+
+  // Full "sentence"
+  const fullHtml = `
+    <div class="trans-sentence">
+      <div class="trans-sentence-label">📝 拼湊結果（逐詞對應，無文法）</div>
+      <div class="trans-sentence-text">${sentenceParts.join(' ')}</div>
+    </div>
+    ${matchedCount > 0 ? `<div style="margin-top:10px;font-size:12px;color:var(--text-dim)">✅ ${matchedCount} 詞已找到對應 · ${unmatchedCount > 0 ? `⚠️ ${unmatchedCount} 詞未在詞庫中` : ''}</div>` : ''}
+    <div class="trans-note">
+      💡 這是「逐詞查字典」模式，非文法翻譯。族語與中文的語序可能不同，請對照單詞理解。
+    </div>
+    ${html}
+  `;
+
+  transResult.innerHTML = fullHtml;
+
+  // Bind audio buttons
+  transResult.querySelectorAll(".trans-word-audio").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const url = btn.dataset.url;
+      if (url) { audioEl.src = url; audioEl.play().catch(() => {}); }
+    });
+  });
+
+  btnTranslate.disabled = false;
+  btnTranslate.textContent = "🔤 翻譯";
+}
+
+// Chinese text segmentation using forward maximum matching
+function segmentChinese(text, dict) {
+  // Get max key length from dictionary
+  let maxLen = 4; // default max Chinese word length
+  const keys = Object.keys(dict);
+  if (keys.length > 0) {
+    maxLen = Math.max(4, Math.min(10, keys.reduce((m, k) => Math.max(m, k.length), 0)));
+  }
+
+  const result = [];
+  let i = 0;
+  const chars = [...text]; // handle Unicode correctly
+
+  while (i < chars.length) {
+    const remaining = chars.length - i;
+    let matched = false;
+
+    // Try longest match first
+    for (let len = Math.min(maxLen, remaining); len >= 1; len--) {
+      const candidate = chars.slice(i, i + len).join('');
+      // Check dictionary
+      if (dict[candidate]) {
+        result.push({ word: candidate, type: 'match' });
+        i += len;
+        matched = true;
+        break;
+      }
+    }
+    if (!matched) {
+      // Single character, check if it's a Chinese character or punctuation
+      const ch = chars[i];
+      // Skip pure punctuation/whitespace
+      if (/^[\s，。、！？；：""''（）【】《》\-\+\=\/\\·~\.\,\!\[\]\(\)\@\#\$\%\^\&\*＿　…—\u3000]+$/.test(ch)) {
+        i++;
+        continue;
+      }
+      result.push({ word: ch, type: 'unmatched' });
+      i++;
+    }
+  }
+  return result;
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
 // ============================================================
 // START
