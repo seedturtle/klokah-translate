@@ -1,0 +1,11 @@
+{
+  "name": "klokah-translate",
+  "version": "1.0.0",
+  "description": "台灣原住民族語翻譯互動學習頁面 — Klokah Translator",
+  "scripts": {
+    "start": "npx serve .",
+    "build": "echo 'Static site — no build needed'"
+  },
+  "keywords": ["klokah", "indigenous", "taiwan", "原住民族語", "language-learning"],
+  "license": "MIT"
+}
