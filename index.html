@@ -599,6 +599,8 @@ function syncLangFromLearn() {
 function syncLangFromTranslate() {
   const lid = langSel2.value, did = dialSel2.value;
   langSel.value = lid; updateDialects(lid, dialSel); dialSel.value = did;
+  updateDialects(lid, dialSel2); // <-- 這行漏了！同步更新翻譯模式的方言
+  dialSel2.value = did;
   state.did = did;
   // Invalidate dictionary if dialect changed
   if (dictState.did !== did) { dictState.loaded = false; dictState.dictionary = {}; dictStatus.textContent = "📚 方言已變更，請重新載入詞庫"; dictStatus.className = "dict-status"; btnTranslate.disabled = true; loadDictBtn.textContent = "📚 載入詞庫"; }
