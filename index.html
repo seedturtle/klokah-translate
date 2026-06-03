@@ -751,17 +751,19 @@ async function ttsViaILRDF(text, did) {
   const info = DID_TO_ILRDF[did];
   if (!info) return null;
   // Get first available speaker for this ethnicity
-  const speakers = await callGradioAPI(ILRDF_TTS_API, "lambda", [info.eth], 3000);
-  if (!speakers || speakers.length === 0) return null;
-  // speakers is an array like ["阿美_海岸"] - get first one
-  const speaker = Array.isArray(speakers) ? speakers[0] : speakers;
+  const speakerData = await callGradioAPI(ILRDF_TTS_API, "lambda", [info.eth], 3000);
+  if (!speakerData) return null;
+  // speakerData is {choices: [[label, value], ...], value: "xxx"}
+  const choices = speakerData.choices || [];
+  if (choices.length === 0) return null;
+  const speaker = choices[0][1] || choices[0]; // First speaker's value
   // Call TTS
   const audioResult = await callGradioAPI(ILRDF_TTS_API, "default_speaker_tts", [speaker, text], 8000);
   if (!audioResult) return null;
-  // audioResult is a file path like "/file=/tmp/gradio/xxx.wav"
-  // Convert to full URL
-  const filePath = String(audioResult).replace(/^\/file=/, "");
-  return `${ILRDF_TTS_API.replace("/call", "")}/file=${filePath}`;
+  // audioResult is {path: "...", url: "https://.../gradio_api/file=..."}
+  // Return the full URL
+  const audioUrl = (typeof audioResult === 'object' && audioResult.url) ? audioResult.url : String(audioResult);
+  return audioUrl;
 }
 
 // ============================================================
