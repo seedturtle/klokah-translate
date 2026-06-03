@@ -658,6 +658,101 @@ function getGlossaryForDid(did) {
 }
 
 // ============================================================
+// ILRDF AI API — FALLBACK TRANSLATION
+// ============================================================
+const ILRDF_TRANSLATE_API = "https://ai-labs.ilrdf.org.tw/kari-seejiq-tnpusu-ai-hmjil/gradio_api/call";
+const ILRDF_TTS_API = "https://ai-labs.ilrdf.org.tw/hnang-kari-ai-asi-sluhay/gradio_api/call";
+
+const DID_TO_ILRDF = {
+  // 阿美語
+  "1": { eth:"阿美", code:"ami_Sout" }, "2": { eth:"阿美", code:"ami_Xiug" },
+  "3": { eth:"阿美", code:"ami_Coas" }, "4": { eth:"阿美", code:"ami_Mala" },
+  "5": { eth:"阿美", code:"ami_Heng" },
+  // 泰雅語
+  "6": { eth:"泰雅", code:"tay_Saqu" }, "7": { eth:"泰雅", code:"tay_Zhao" },
+  "8": { eth:"泰雅", code:"tay_Wens" }, "9": { eth:"泰雅", code:"tay_Wann" },
+  "10": { eth:"泰雅", code:"tay_Four" }, "11": { eth:"泰雅", code:"tay_Yira" },
+  // 賽夏語
+  "13": { eth:"賽夏", code:"xsy_Sais" },
+  // 邵語
+  "14": { eth:"邵", code:"ssf_Thao" },
+  // 賽德克語
+  "15": { eth:"賽德克", code:"trv_Toda" }, "16": { eth:"賽德克", code:"trv_Tejd" },
+  "17": { eth:"賽德克", code:"trv_Delu" },
+  // 布農語
+  "18": { eth:"布農", code:"bnn_Zhuo" }, "19": { eth:"布農", code:"bnn_Kaq" },
+  "20": { eth:"布農", code:"bnn_Danq" }, "21": { eth:"布農", code:"bnn_Luan" },
+  "22": { eth:"布農", code:"bnn_Junq" },
+  // 排灣語
+  "23": { eth:"排灣", code:"pwn_East" }, "24": { eth:"排灣", code:"pwn_Nort" },
+  "25": { eth:"排灣", code:"pwn_Cent" }, "26": { eth:"排灣", code:"pwn_Sout" },
+  // 魯凱語
+  "27": { eth:"魯凱", code:"dru_Tanm" }, "28": { eth:"魯凱", code:"dru_Wuta" },
+  "29": { eth:"魯凱", code:"dru_Dawu" }, "30": { eth:"魯凱", code:"dru_Dona" },
+  "31": { eth:"魯凱", code:"dru_Maol" }, "32": { eth:"魯凱", code:"dru_Wans" },
+  // 太魯閣語
+  "33": { eth:"太魯閣", code:"trv_Truk" },
+  // 噶瑪蘭語
+  "34": { eth:"噶瑪蘭", code:"ckv_Kava" },
+  // 鄒語
+  "35": { eth:"鄒", code:"tsu_Tsou" },
+  // 卑南語
+  "38": { eth:"卑南", code:"pyu_Nanw" }, "39": { eth:"卑南", code:"pyu_Zhib" },
+  "40": { eth:"卑南", code:"pyu_Xiqu" }, "41": { eth:"卑南", code:"pyu_Jian" },
+  // 雅美語
+  "42": { eth:"雅美", code:"tao_Yami" },
+  // 撒奇萊雅語
+  "43": { eth:"撒奇萊雅", code:"szy_Saki" },
+  // 卡那卡那富語
+  "36": { eth:"卡那卡那富", code:"xnb_Kana" },
+  // 拉阿魯哇語
+  "37": { eth:"拉阿魯哇", code:"sxr_Saar" },
+};
+
+async function callGradioAPI(apiBase, endpoint, data) {
+  try {
+    const res = await fetch(`${apiBase}/${endpoint}`, {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ data })
+    });
+    if (!res.ok) return null;
+    const { event_id } = await res.json();
+    await new Promise(r => setTimeout(r, 4000));
+    const res2 = await fetch(`${apiBase}/${endpoint}/${event_id}`);
+    if (!res2.ok) return null;
+    const text = await res2.text();
+    const match = text.match(/data:\s*(\[.*?\])/s);
+    if (!match) return null;
+    const parsed = JSON.parse(match[1]);
+    return parsed[0];
+  } catch (e) {
+    return null;
+  }
+}
+
+async function translateViaILRDF(text, did) {
+  const info = DID_TO_ILRDF[did];
+  if (!info) return null;
+  const result = await callGradioAPI(
+    ILRDF_TRANSLATE_API, "translate_1",
+    [text, "zho_Hant", info.code]
+  );
+  return result || null;
+}
+
+async function ttsViaILRDF(text, did) {
+  const info = DID_TO_ILRDF[did];
+  if (!info) return null;
+  // Use default speaker TTS (first speaker available for this ethnicity)
+  // First get speaker list for this ethnicity
+  const speakers = await callGradioAPI(ILRDF_TTS_API, "lambda", [info.eth]);
+  if (!speakers || speakers.length === 0) return null;
+  const speaker = speakers[0];
+  const audioUrl = await callGradioAPI(ILRDF_TTS_API, "default_speaker_tts", [speaker, text]);
+  return audioUrl || null;
+}
+
+// ============================================================
 // LEARN MODE
 // ============================================================
 function renderCategories() {
@@ -867,7 +962,7 @@ async function loadDictionary() {
 // ============================================================
 // TRANSLATE MODE — CHINESE → INDIGENOUS
 // ============================================================
-function doTranslate() {
+async function doTranslate() {
   const text = transInput.value.trim();
   if (!text || !dictState.loaded) return;
   btnTranslate.disabled = true;
@@ -901,10 +996,11 @@ function doTranslate() {
       sentenceParts.push(`<span class="ts-word matched">${escHtml(m.ab)}</span>`);
     } else {
       unmatchedCount++;
-      html += `<div class="trans-word-row" data-qi="-1">
+      const idx = qi + 1;  // unique index for this unmatched word
+      html += `<div class="trans-word-row" data-ilrdf="${escHtml(ch)}" data-ilrdf-idx="${idx}">
         <span class="trans-word-ch">${escHtml(ch)}</span>
         <span class="trans-word-arrow">→</span>
-        <span class="trans-word-ab unmatched">（無對應詞）</span>
+        <span class="trans-word-ab unmatched">⏳ 查詢中...</span>
         <span class="trans-word-audio" style="opacity:0.2">—</span>
       </div>`;
       sentenceParts.push(`<span class="ts-word unmatched">${escHtml(ch)}</span>`);
@@ -949,6 +1045,55 @@ function doTranslate() {
       if (transResult._playing) { stopPlayAll(); }
       else { startPlayAll(); }
     });
+  }
+
+  // 🔁 ILRDF AI fallback: async lookup for unmatched words
+  const ilrdfRows = transResult.querySelectorAll("[data-ilrdf]");
+  if (ilrdfRows.length > 0 && DID_TO_ILRDF[dictState.did]) {
+    const did = dictState.did;
+    const unmatchedWords = [...new Set(
+      Array.from(ilrdfRows).map(row => row.dataset.ilrdf)
+    )];
+    // Show an "AI查詢中" indicator
+    const note = transResult.querySelector(".trans-note");
+    if (note) {
+      note.innerHTML += `<br>🤖 <span id="ilrdfStatus">AI 翻譯查詢 ${unmatchedWords.length} 詞...</span>`;
+    }
+    // Query each unique word
+    for (const word of unmatchedWords) {
+      const result = await translateViaILRDF(word, did);
+      // Update all rows with this word
+      transResult.querySelectorAll(`[data-ilrdf="${CSS.escape(word)}"]`).forEach(row => {
+        const abSpan = row.querySelector(".trans-word-ab");
+        const audioSpan = row.querySelector(".trans-word-audio");
+        if (result) {
+          abSpan.textContent = result;
+          abSpan.className = "trans-word-ab";
+          abSpan.style.color = "var(--accent4)";
+          // Add AI badge
+          const badge = document.createElement("span");
+          badge.textContent = "🤖";
+          badge.style.cssText = "font-size:11px;opacity:0.6;margin-left:6px";
+          badge.title = "原語會AI翻譯";
+          abSpan.appendChild(badge);
+          // Remove the data-ilrdf attribute so it's not queried again
+          row.removeAttribute("data-ilrdf");
+        } else {
+          abSpan.textContent = "（無對應詞）";
+          abSpan.className = "trans-word-ab unmatched";
+        }
+      });
+      // Update status
+      const statusEl = document.getElementById("ilrdfStatus");
+      if (statusEl) {
+        const remaining = transResult.querySelectorAll("[data-ilrdf]").length;
+        if (remaining > 0) {
+          statusEl.textContent = `🤖 AI 翻譯查詢中... 剩 ${remaining} 詞`;
+        } else {
+          statusEl.textContent = `✅ AI 翻譯完成`;
+        }
+      }
+    }
   }
 
   btnTranslate.disabled = false;
