@@ -1010,12 +1010,10 @@ async function doTranslate() {
       sentenceParts.push(`<span class="ts-word matched">${escHtml(m.ab)}</span>`);
     } else {
       unmatchedCount++;
-      const idx = qi + 1;  // unique index for this unmatched word
-      html += `<div class="trans-word-row" data-ilrdf="${escHtml(ch)}" data-ilrdf-idx="${idx}">
+      html += `<div class="trans-word-row" data-ilrdf="1">
         <span class="trans-word-ch">${escHtml(ch)}</span>
         <span class="trans-word-arrow">→</span>
-        <span class="trans-word-ab unmatched">⏳ 查詢中...</span>
-        <span class="trans-word-audio" style="opacity:0.2">—</span>
+        <span class="trans-word-ab unmatched">⏳ 待整段翻譯...</span>
       </div>`;
       sentenceParts.push(`<span class="ts-word unmatched">${escHtml(ch)}</span>`);
     }
@@ -1061,93 +1059,124 @@ async function doTranslate() {
     });
   }
 
-  // 🔁 ILRDF AI fallback: async lookup for unmatched words
+  // 🔁 ILRDF AI fallback: translate whole unmatched phrase, not per-word
   const ilrdfRows = transResult.querySelectorAll("[data-ilrdf]");
   if (ilrdfRows.length > 0 && DID_TO_ILRDF[dictState.did]) {
     const did = dictState.did;
-    const unmatchedWords = [...new Set(
-      Array.from(ilrdfRows).map(row => row.dataset.ilrdf)
-    )];
-    // Show an "AI查詢中" indicator
+    
+    // Collect all unmatched text in order as one contiguous phrase
+    const unmatchedSegments = segments.filter(s => s.type === 'unmatched');
+    const phraseToTranslate = unmatchedSegments.map(s => s.word).join('');
+    
+    if (!phraseToTranslate) {
+      const statusEl = transResult.querySelector("#ilrdfStatus");
+      if (statusEl) statusEl.textContent = "❌ 無法取得未匹配文字";
+      return;
+    }
+    
+    // Show progress indicator
     const note = transResult.querySelector(".trans-note");
     if (note) {
-      note.innerHTML += `<br>🤖 <span id="ilrdfStatus">AI 翻譯查詢 ${unmatchedWords.length} 詞...</span>`;
+      note.innerHTML += `<br>🤖 <span id="ilrdfStatus">AI 整段翻譯「${escHtml(phraseToTranslate)}」...</span>`;
     }
-    // Query each unique word
-    for (const word of unmatchedWords) {
-      const result = await translateViaILRDF(word, did);
-      // Update all rows with this word
-      transResult.querySelectorAll(`[data-ilrdf="${CSS.escape(word)}"]`).forEach(row => {
+    
+    // 🌟 Translate the whole phrase at once
+    const wholeResult = await translateViaILRDF(phraseToTranslate, did);
+    
+    if (wholeResult) {
+      // Update unmatched row indicators
+      ilrdfRows.forEach(row => {
         const abSpan = row.querySelector(".trans-word-ab");
-        const audioSpan = row.querySelector(".trans-word-audio");
-        if (result) {
-          abSpan.textContent = result;
+        if (abSpan) {
+          abSpan.textContent = "（整段 ↓）";
           abSpan.className = "trans-word-ab";
-          abSpan.style.color = "var(--accent4)";
-          // Add AI badge
-          const badge = document.createElement("span");
-          badge.textContent = "🤖";
-          badge.style.cssText = "font-size:11px;opacity:0.6;margin-left:6px";
-          badge.title = "原語會AI翻譯";
-          abSpan.appendChild(badge);
-          // Add TTS button + pre-fetch for play-all
-          audioSpan.textContent = "";
-          audioSpan.style.cssText = "";
-          const ttsBtn = document.createElement("button");
-          ttsBtn.className = "trans-word-audio";
-          ttsBtn.textContent = "⏳";
-          ttsBtn.dataset.ttsText = result;
-          ttsBtn.dataset.ttsDid = did;
-          ttsBtn.title = "AI 合成語音";
-          ttsBtn.disabled = true;
-          ttsBtn.style.cssText = "";
-          // Pre-fetch TTS audio eagerly
-          const qiNew = audioQueue.length;
-          ttsViaILRDF(result, did).then(audioUrl => {
-            if (audioUrl) {
-              // Add to play-all queue
-              audioQueue.push({ url: audioUrl, qi: qiNew });
-              // Update play-all button
-              const playAllBtn2 = document.getElementById("btnPlayAll");
-              if (playAllBtn2) {
-                const totalAudio = audioQueue.length;
-                playAllBtn2.textContent = `🔊 全部朗讀（${totalAudio} 詞）`;
-              }
-              // Enable button with play functionality
-              ttsBtn.textContent = "🔊";
-              ttsBtn.disabled = false;
-              ttsBtn.addEventListener("click", () => {
-                stopPlayAll();
-                audioEl.src = audioUrl;
-                audioEl.play().catch(() => {});
-              });
-            } else {
-              ttsBtn.textContent = "—";
-              ttsBtn.style.opacity = "0.2";
-              ttsBtn.disabled = true;
-            }
-          }).catch(() => {
-            ttsBtn.textContent = "❌";
-            ttsBtn.disabled = false;
-          });
-          audioSpan.parentNode.replaceChild(ttsBtn, audioSpan);
-          // Remove the data-ilrdf attribute so it's not queried again
-          row.removeAttribute("data-ilrdf");
-        } else {
-          abSpan.textContent = "（無對應詞）";
-          abSpan.className = "trans-word-ab unmatched";
+          abSpan.style.cssText = "color:var(--text-dim);font-size:11px;opacity:0.5;font-weight:400";
         }
       });
-      // Update status
-      const statusEl = document.getElementById("ilrdfStatus");
-      if (statusEl) {
-        const remaining = transResult.querySelectorAll("[data-ilrdf]").length;
-        if (remaining > 0) {
-          statusEl.textContent = `🤖 AI 翻譯查詢中... 剩 ${remaining} 詞`;
+      
+      // 🎯 Add ONE combined row for the whole phrase
+      const combinedRow = document.createElement("div");
+      combinedRow.className = "trans-word-row";
+      combinedRow.dataset.qi = "phrasetts";
+      combinedRow.style.cssText = "border-top:1px dashed var(--border);margin-top:4px;padding-top:8px;padding-bottom:4px";
+      
+      combinedRow.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;width:100%">
+          <span style="font-size:11px;color:var(--text-dim);opacity:0.6">📎 整段</span>
+          <span class="trans-word-ch" style="font-size:15px;font-weight:500">${escHtml(phraseToTranslate)}</span>
+          <span class="trans-word-arrow" style="font-size:14px">→</span>
+          <span class="trans-word-ab" style="color:var(--accent4);font-size:16px;font-weight:600">${escHtml(wholeResult)} 🤖</span>
+          <span id="wholeTtsContainer">
+            <button class="trans-word-audio" id="btnWholeTTS" disabled>⏳</button>
+          </span>
+        </div>
+      `;
+      transResult.appendChild(combinedRow);
+      
+      // 🎧 Generate ONE TTS for the whole translated phrase
+      const ttsBtn = document.getElementById("btnWholeTTS");
+      const qiNew = audioQueue.length;
+      ttsViaILRDF(wholeResult, did).then(audioUrl => {
+        if (audioUrl) {
+          audioQueue.push({ url: audioUrl, qi: "phrasetts" });
+          // Update play-all button
+          const playAllBtn2 = document.getElementById("btnPlayAll");
+          if (playAllBtn2) {
+            const totalAudio = audioQueue.length;
+            playAllBtn2.textContent = `🔊 全部朗讀（${totalAudio} 段）`;
+          }
+          ttsBtn.textContent = "🔊";
+          ttsBtn.disabled = false;
+          ttsBtn.title = "整段 AI 語音";
+          ttsBtn.addEventListener("click", () => {
+            stopPlayAll();
+            audioEl.src = audioUrl;
+            audioEl.play().catch(() => {});
+          });
         } else {
-          statusEl.textContent = `✅ AI 翻譯完成`;
+          ttsBtn.textContent = "—";
+          ttsBtn.style.opacity = "0.2";
+          ttsBtn.disabled = true;
+        }
+      }).catch(() => {
+        ttsBtn.textContent = "❌";
+        ttsBtn.disabled = false;
+      });
+      
+      // ✨ Update sentence display: replace unmatched spans with full translation
+      const sentenceText = transResult.querySelector(".trans-sentence-text");
+      if (sentenceText) {
+        const unmatchedSpans = sentenceText.querySelectorAll(".ts-word.unmatched");
+        if (unmatchedSpans.length > 0) {
+          const wrapper = document.createElement("span");
+          wrapper.className = "ts-word matched";
+          wrapper.style.color = "var(--accent4)";
+          wrapper.textContent = wholeResult;
+          unmatchedSpans[0].replaceWith(wrapper);
+          // Remove remaining individual unmatched spans
+          for (let i = 1; i < unmatchedSpans.length; i++) {
+            unmatchedSpans[i].remove();
+          }
         }
       }
+    } else {
+      // Translation failed
+      ilrdfRows.forEach(row => {
+        const abSpan = row.querySelector(".trans-word-ab");
+        if (abSpan) {
+          abSpan.textContent = "❌ 查無對應";
+          abSpan.className = "trans-word-ab unmatched";
+          abSpan.style.cssText = "";
+        }
+      });
+    }
+    
+    // Update status
+    const statusEl = document.getElementById("ilrdfStatus");
+    if (statusEl) {
+      statusEl.textContent = wholeResult
+        ? `✅ AI 整段翻譯完成`
+        : `❌ AI 翻譯失敗`;
     }
   }
 
