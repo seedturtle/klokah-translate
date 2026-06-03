@@ -709,7 +709,7 @@ const DID_TO_ILRDF = {
   "37": { eth:"拉阿魯哇", code:"sxr_Saar" },
 };
 
-async function callGradioAPI(apiBase, endpoint, data) {
+async function callGradioAPI(apiBase, endpoint, data, timeoutMs = 4000) {
   try {
     const res = await fetch(`${apiBase}/${endpoint}`, {
       method: "POST", headers: { "Content-Type": "application/json" },
@@ -717,14 +717,21 @@ async function callGradioAPI(apiBase, endpoint, data) {
     });
     if (!res.ok) return null;
     const { event_id } = await res.json();
-    await new Promise(r => setTimeout(r, 4000));
-    const res2 = await fetch(`${apiBase}/${endpoint}/${event_id}`);
-    if (!res2.ok) return null;
-    const text = await res2.text();
-    const match = text.match(/data:\s*(\[.*?\])/s);
-    if (!match) return null;
-    const parsed = JSON.parse(match[1]);
-    return parsed[0];
+    // Poll for result with retry
+    for (let attempt = 0; attempt < 15; attempt++) {
+      await new Promise(r => setTimeout(r, timeoutMs / 10));
+      const res2 = await fetch(`${apiBase}/${endpoint}/${event_id}`);
+      if (!res2.ok) continue;
+      const text = await res2.text();
+      if (text.includes("data:")) {
+        const match = text.match(/data:\s*(\[.*?\])\s*$/s);
+        if (match) {
+          const parsed = JSON.parse(match[1]);
+          return parsed[0];
+        }
+      }
+    }
+    return null;
   } catch (e) {
     return null;
   }
@@ -735,7 +742,7 @@ async function translateViaILRDF(text, did) {
   if (!info) return null;
   const result = await callGradioAPI(
     ILRDF_TRANSLATE_API, "translate_1",
-    [text, "zho_Hant", info.code]
+    [text, "zho_Hant", info.code], 3000
   );
   return result || null;
 }
@@ -743,13 +750,18 @@ async function translateViaILRDF(text, did) {
 async function ttsViaILRDF(text, did) {
   const info = DID_TO_ILRDF[did];
   if (!info) return null;
-  // Use default speaker TTS (first speaker available for this ethnicity)
-  // First get speaker list for this ethnicity
-  const speakers = await callGradioAPI(ILRDF_TTS_API, "lambda", [info.eth]);
+  // Get first available speaker for this ethnicity
+  const speakers = await callGradioAPI(ILRDF_TTS_API, "lambda", [info.eth], 3000);
   if (!speakers || speakers.length === 0) return null;
-  const speaker = speakers[0];
-  const audioUrl = await callGradioAPI(ILRDF_TTS_API, "default_speaker_tts", [speaker, text]);
-  return audioUrl || null;
+  // speakers is an array like ["阿美_海岸"] - get first one
+  const speaker = Array.isArray(speakers) ? speakers[0] : speakers;
+  // Call TTS
+  const audioResult = await callGradioAPI(ILRDF_TTS_API, "default_speaker_tts", [speaker, text], 8000);
+  if (!audioResult) return null;
+  // audioResult is a file path like "/file=/tmp/gradio/xxx.wav"
+  // Convert to full URL
+  const filePath = String(audioResult).replace(/^\/file=/, "");
+  return `${ILRDF_TTS_API.replace("/call", "")}/file=${filePath}`;
 }
 
 // ============================================================
@@ -1076,6 +1088,35 @@ async function doTranslate() {
           badge.style.cssText = "font-size:11px;opacity:0.6;margin-left:6px";
           badge.title = "原語會AI翻譯";
           abSpan.appendChild(badge);
+          // Add TTS button for AI translations
+          audioSpan.textContent = "";
+          audioSpan.style.cssText = "";
+          const ttsBtn = document.createElement("button");
+          ttsBtn.className = "trans-word-audio";
+          ttsBtn.textContent = "🔊";
+          ttsBtn.dataset.ttsText = result;
+          ttsBtn.dataset.ttsDid = did;
+          ttsBtn.title = "AI 合成語音";
+          ttsBtn.style.cssText = "";
+          ttsBtn.addEventListener("click", async function() {
+            this.disabled = true;
+            this.textContent = "⏳";
+            try {
+              const audioUrl = await ttsViaILRDF(this.dataset.ttsText, this.dataset.ttsDid);
+              if (audioUrl) {
+                audioEl.src = audioUrl;
+                audioEl.play().catch(() => {});
+                this.textContent = "🔊";
+              } else {
+                this.textContent = "❌";
+                setTimeout(() => { this.textContent = "🔊"; }, 2000);
+              }
+            } catch(e) {
+              this.textContent = "❌";
+            }
+            this.disabled = false;
+          });
+          audioSpan.parentNode.replaceChild(ttsBtn, audioSpan);
           // Remove the data-ilrdf attribute so it's not queried again
           row.removeAttribute("data-ilrdf");
         } else {
