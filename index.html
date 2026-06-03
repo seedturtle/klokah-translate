@@ -1090,33 +1090,45 @@ async function doTranslate() {
           badge.style.cssText = "font-size:11px;opacity:0.6;margin-left:6px";
           badge.title = "原語會AI翻譯";
           abSpan.appendChild(badge);
-          // Add TTS button for AI translations
+          // Add TTS button + pre-fetch for play-all
           audioSpan.textContent = "";
           audioSpan.style.cssText = "";
           const ttsBtn = document.createElement("button");
           ttsBtn.className = "trans-word-audio";
-          ttsBtn.textContent = "🔊";
+          ttsBtn.textContent = "⏳";
           ttsBtn.dataset.ttsText = result;
           ttsBtn.dataset.ttsDid = did;
           ttsBtn.title = "AI 合成語音";
+          ttsBtn.disabled = true;
           ttsBtn.style.cssText = "";
-          ttsBtn.addEventListener("click", async function() {
-            this.disabled = true;
-            this.textContent = "⏳";
-            try {
-              const audioUrl = await ttsViaILRDF(this.dataset.ttsText, this.dataset.ttsDid);
-              if (audioUrl) {
+          // Pre-fetch TTS audio eagerly
+          const qiNew = audioQueue.length;
+          ttsViaILRDF(result, did).then(audioUrl => {
+            if (audioUrl) {
+              // Add to play-all queue
+              audioQueue.push({ url: audioUrl, qi: qiNew });
+              // Update play-all button
+              const playAllBtn2 = document.getElementById("btnPlayAll");
+              if (playAllBtn2) {
+                const totalAudio = audioQueue.length;
+                playAllBtn2.textContent = `🔊 全部朗讀（${totalAudio} 詞）`;
+              }
+              // Enable button with play functionality
+              ttsBtn.textContent = "🔊";
+              ttsBtn.disabled = false;
+              ttsBtn.addEventListener("click", () => {
+                stopPlayAll();
                 audioEl.src = audioUrl;
                 audioEl.play().catch(() => {});
-                this.textContent = "🔊";
-              } else {
-                this.textContent = "❌";
-                setTimeout(() => { this.textContent = "🔊"; }, 2000);
-              }
-            } catch(e) {
-              this.textContent = "❌";
+              });
+            } else {
+              ttsBtn.textContent = "—";
+              ttsBtn.style.opacity = "0.2";
+              ttsBtn.disabled = true;
             }
-            this.disabled = false;
+          }).catch(() => {
+            ttsBtn.textContent = "❌";
+            ttsBtn.disabled = false;
           });
           audioSpan.parentNode.replaceChild(ttsBtn, audioSpan);
           // Remove the data-ilrdf attribute so it's not queried again
