@@ -1030,7 +1030,11 @@ async function doTranslate() {
       ${matchedCount > 0 ? `<span style="font-size:12px;color:var(--text-dim)">✅ ${matchedCount} 詞已找到對應${unmatchedCount > 0 ? ` · ⚠️ ${unmatchedCount} 詞未在詞庫中` : ''}</span>` : ''}
       ${audioCount > 0 ? 
         (unmatchedCount > 0 
-          ? `<button class="btn-play-all" id="btnPlayAll" disabled style="opacity:0.5;cursor:default">⏳ AI 語音合成中...</button>` 
+          ? `<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn-play-all" id="btnPlayHybrid" disabled style="opacity:0.5;cursor:default;flex:1;min-width:140px">🔊 混合朗讀 ⏳</button>
+<button class="btn-play-all" id="btnPlayFullAI" disabled style="opacity:0.5;cursor:default;flex:1;min-width:140px;background:linear-gradient(135deg,#45b7d1,#2a8fa8)">🤖 全AI朗讀 ⏳</button>
+</div>
+<div style="font-size:11px;color:var(--text-dim);margin-top:4px">💡 混合：配對詞真人錄音 + 未配對AI合成 · 全AI：整句AI翻譯合成</div>`
           : `<button class="btn-play-all" id="btnPlayAll">🔊 全部朗讀（${audioCount} 詞）</button>`
         ) : ''}
     </div>
@@ -1054,13 +1058,15 @@ async function doTranslate() {
     });
   });
 
-  // Bind play-all button (skip if unmatched words — will bind after AI TTS is ready)
-  const playAllBtn = document.getElementById("btnPlayAll");
-  if (playAllBtn && unmatchedCount === 0) {
-    playAllBtn.addEventListener("click", () => {
-      if (transResult._playing) { stopPlayAll(); }
-      else { startPlayAll(); }
-    });
+  // Bind play-all button(s) — skip both if unmatched words (will bind after TTS ready)
+  if (unmatchedCount === 0) {
+    const playAllBtn = document.getElementById("btnPlayAll");
+    if (playAllBtn) {
+      playAllBtn.addEventListener("click", () => {
+        if (transResult._playing) { stopPlayAll(); }
+        else { startPlayAll(); }
+      });
+    }
   }
 
   // 🔁 ILRDF AI fallback: translate whole unmatched phrase, not per-word
@@ -1081,7 +1087,7 @@ async function doTranslate() {
     // Show progress indicator
     const note = transResult.querySelector(".trans-note");
     if (note) {
-      note.innerHTML += `<br>🤖 <span id="ilrdfStatus">AI 整段翻譯「${escHtml(phraseToTranslate)}」...</span>`;
+      note.innerHTML += `<br>🤖 <span id="ilrdfStatus">AI 混合模式翻譯「${escHtml(phraseToTranslate)}」...</span>`;
     }
     
     // 🌟 Translate the whole phrase at once
@@ -1132,16 +1138,15 @@ async function doTranslate() {
         if (audioUrl) {
           // Insert whole-phrase TTS at correct position (input order)
           audioQueue.splice(matchedBeforeUnmatched, 0, { url: audioUrl, qi: "phrasetts" });
-          // Enable play-all button now that all audio is ready
-          const playAllBtn2 = document.getElementById("btnPlayAll");
-          if (playAllBtn2) {
-            playAllBtn2.disabled = false;
-            playAllBtn2.style.opacity = "";
-            playAllBtn2.style.cursor = "";
+          // Enable hybrid play button now that all audio is ready
+          const hybridBtn = document.getElementById("btnPlayHybrid");
+          if (hybridBtn) {
+            hybridBtn.disabled = false;
+            hybridBtn.style.opacity = "";
+            hybridBtn.style.cursor = "pointer";
             const totalAudio = audioQueue.length;
-            playAllBtn2.textContent = `🔊 全部朗讀（${totalAudio} 段）`;
-            // Bind click handler now
-            playAllBtn2.addEventListener("click", () => {
+            hybridBtn.textContent = `🔊 混合朗讀（${totalAudio} 段）`;
+            hybridBtn.addEventListener("click", () => {
               if (transResult._playing) { stopPlayAll(); }
               else { startPlayAll(); }
             });
@@ -1155,14 +1160,14 @@ async function doTranslate() {
             audioEl.play().catch(() => {});
           });
         } else {
-          // TTS failed — re-enable play-all anyway with just matched audio
-          const playAllBtn2 = document.getElementById("btnPlayAll");
-          if (playAllBtn2) {
-            playAllBtn2.disabled = false;
-            playAllBtn2.style.opacity = "";
-            playAllBtn2.style.cursor = "";
-            playAllBtn2.textContent = `🔊 全部朗讀（${audioQueue.length} 詞）`;
-            playAllBtn2.addEventListener("click", () => {
+          // TTS failed — enable hybrid with just matched audio
+          const hybridBtn = document.getElementById("btnPlayHybrid");
+          if (hybridBtn) {
+            hybridBtn.disabled = false;
+            hybridBtn.style.opacity = "";
+            hybridBtn.style.cursor = "pointer";
+            hybridBtn.textContent = `🔊 混合朗讀（${audioQueue.length} 詞）`;
+            hybridBtn.addEventListener("click", () => {
               if (transResult._playing) { stopPlayAll(); }
               else { startPlayAll(); }
             });
@@ -1172,20 +1177,71 @@ async function doTranslate() {
           ttsBtn.disabled = true;
         }
       }).catch(() => {
-        // TTS error — still enable play-all with available audio
-        const playAllBtn2 = document.getElementById("btnPlayAll");
-        if (playAllBtn2) {
-          playAllBtn2.disabled = false;
-          playAllBtn2.style.opacity = "";
-          playAllBtn2.style.cursor = "";
-          playAllBtn2.textContent = `🔊 全部朗讀（${audioQueue.length} 詞）`;
-          playAllBtn2.addEventListener("click", () => {
+        // TTS error — enable hybrid with available audio
+        const hybridBtn = document.getElementById("btnPlayHybrid");
+        if (hybridBtn) {
+          hybridBtn.disabled = false;
+          hybridBtn.style.opacity = "";
+          hybridBtn.style.cursor = "pointer";
+          hybridBtn.textContent = `🔊 混合朗讀（${audioQueue.length} 詞）`;
+          hybridBtn.addEventListener("click", () => {
             if (transResult._playing) { stopPlayAll(); }
             else { startPlayAll(); }
           });
         }
         ttsBtn.textContent = "❌";
         ttsBtn.disabled = false;
+      });
+      
+      // 🛜 Mode 2: Full AI — translate entire input text + TTS
+      const fullAiStatus = document.createElement("span");
+      fullAiStatus.id = "fullAiStatus";
+      fullAiStatus.textContent = " · 🤖 全AI翻譯中...";
+      fullAiStatus.style.cssText = "font-size:11px;color:var(--accent4);opacity:0.8";
+      const statusEl2 = document.getElementById("ilrdfStatus");
+      if (statusEl2) statusEl2.after(fullAiStatus);
+      
+      translateViaILRDF(text, did).then(fullTranslation => {
+        if (fullTranslation && fullTranslation !== wholeResult) {
+          // Update status
+          if (fullAiStatus) fullAiStatus.textContent = " · 🤖 全AI語音合成中...";
+          // Generate TTS for the full translation
+          ttsViaILRDF(fullTranslation, did).then(audioUrl => {
+            if (audioUrl) {
+              const fullBtn = document.getElementById("btnPlayFullAI");
+              if (fullBtn) {
+                fullBtn.disabled = false;
+                fullBtn.style.opacity = "";
+                fullBtn.style.cursor = "pointer";
+                fullBtn.textContent = "🤖 全AI朗讀";
+                fullBtn.addEventListener("click", () => {
+                  stopPlayAll();
+                  audioEl.src = audioUrl;
+                  audioEl.play().catch(() => {});
+                });
+              }
+              if (fullAiStatus) fullAiStatus.textContent = " · ✅ 全AI就緒";
+            } else {
+              if (fullBtn) { fullBtn.textContent = "🤖 全AI朗讀 ❌"; fullBtn.disabled = false; }
+              if (fullAiStatus) fullAiStatus.textContent = " · ❌ 全AI合成失敗";
+            }
+          }).catch(() => {
+            const fullBtn = document.getElementById("btnPlayFullAI");
+            if (fullBtn) { fullBtn.textContent = "🤖 全AI朗讀 ❌"; fullBtn.disabled = false; }
+            if (fullAiStatus) fullAiStatus.textContent = " · ❌ 全AI合成失敗";
+          });
+        } else {
+          // Full translation same as partial or failed
+          if (fullAiStatus) fullAiStatus.textContent = fullTranslation === wholeResult ? " · ⚠️ 全AI與混合結果相同" : " · ❌ 全AI翻譯失敗";
+          const fullBtn = document.getElementById("btnPlayFullAI");
+          if (fullBtn) {
+            fullBtn.disabled = false;
+            fullBtn.style.opacity = "0.4";
+            fullBtn.style.cursor = "default";
+            fullBtn.textContent = "🤖 全AI朗讀 —";
+            fullBtn.title = fullTranslation === wholeResult ? "與混合結果相同" : "翻譯失敗";
+          }
+        }
       });
       
       // ✨ Update sentence display: replace unmatched spans with full translation
@@ -1219,9 +1275,9 @@ async function doTranslate() {
     // Update status
     const statusEl = document.getElementById("ilrdfStatus");
     if (statusEl) {
-      statusEl.textContent = wholeResult
-        ? `✅ AI 整段翻譯完成`
-        : `❌ AI 翻譯失敗`;
+      statusEl.innerHTML = wholeResult
+        ? `✅ 混合模式完成<span id="fullAiProgress" style="font-size:11px;color:var(--accent4);opacity:0.8"> · 全AI翻譯中...</span>`
+        : `❌ 混合模式失敗<span id="fullAiProgress" style="font-size:11px;color:var(--text-dim);opacity:0.5"> · 全AI仍執行中</span>`;
     }
   }
 
