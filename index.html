@@ -542,6 +542,8 @@ let dictState = {
   loaded: false,
   loading: false,
 };
+let glossaryData = null;   // supplementary dictionary from 教育部詞表
+let glossaryFetched = false;
 
 // ============================================================
 // DOM REFS
@@ -601,6 +603,8 @@ function init() {
   transInput.addEventListener("keydown", e => {
     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); doTranslate(); }
   });
+  // Load supplementary glossary (教育部42語詞表)
+  fetchGlossary();
 }
 
 function updateDialects(lid, sel) {
@@ -630,6 +634,27 @@ function syncLangFromTranslate() {
   // Invalidate dictionary if dialect changed
   if (dictState.did !== firstDid) { dictState.loaded = false; dictState.dictionary = {}; dictStatus.textContent = "📚 方言已變更，請重新載入詞庫"; dictStatus.className = "dict-status"; btnTranslate.disabled = true; loadDictBtn.textContent = "📚 載入詞庫"; }
   dictState.did = firstDid;
+}
+
+// ============================================================
+// SUPPLEMENTARY GLOSSARY (教育部 42 語詞表)
+// ============================================================
+async function fetchGlossary() {
+  if (glossaryFetched) return;
+  try {
+    const res = await fetch('glossary.json');
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    glossaryData = await res.json();
+    glossaryFetched = true;
+    console.log(`📖 教育部詞表已載入：${Object.keys(glossaryData).length} 種方言`);
+  } catch (e) {
+    console.warn('⚠️ 教育部詞表載入失敗（不影響主要功能）:', e.message);
+  }
+}
+
+function getGlossaryForDid(did) {
+  if (!glossaryData || !glossaryData[did]) return null;
+  return glossaryData[did];
 }
 
 // ============================================================
@@ -813,6 +838,29 @@ async function loadDictionary() {
   const dictSize = Object.keys(dictState.dictionary).length;
   dictStatus.innerHTML = `✅ 已載入 <strong class="dict-count">${total}</strong> 筆單詞（<strong class="dict-count">${dictSize}</strong> 個不同中文詞）${errors > 0 ? `，${errors} 類失敗` : ""}`;
   dictStatus.className = "dict-status loaded";
+  // Merge supplementary glossary (教育部詞表) for current dialect
+  const supp = getGlossaryForDid(did);
+  if (supp) {
+    let suppAdded = 0;
+    for (const [ch, abList] of Object.entries(supp)) {
+      if (!dictState.dictionary[ch]) {
+        dictState.dictionary[ch] = abList.map(ab => ({ ab, n: null, snda: false }));
+        dictState.reverseDict[abList[0]] = ch;
+        suppAdded++;
+        total++;
+      }
+    }
+    if (suppAdded > 0) {
+      dictStatus.innerHTML += ` ＋ <span style="color:var(--accent2)">📖 ${suppAdded} 詞</span>`;
+      // Update the displayed dict size too
+      const newDictSize = Object.keys(dictState.dictionary).length;
+      dictStatus.innerHTML = dictStatus.innerHTML.replace(
+        /（\d+ 個不同中文詞）/,
+        `（${newDictSize} 個不同中文詞）`
+      );
+    }
+  }
+  dictState.totalWords = total;
   if (!transInput.value.trim()) btnTranslate.disabled = true;
 }
 
