@@ -1028,7 +1028,11 @@ async function doTranslate() {
     </div>
     <div style="margin-top:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
       ${matchedCount > 0 ? `<span style="font-size:12px;color:var(--text-dim)">✅ ${matchedCount} 詞已找到對應${unmatchedCount > 0 ? ` · ⚠️ ${unmatchedCount} 詞未在詞庫中` : ''}</span>` : ''}
-      ${audioCount > 0 ? `<button class="btn-play-all" id="btnPlayAll">🔊 全部朗讀（${audioCount} 詞）</button>` : ''}
+      ${audioCount > 0 ? 
+        (unmatchedCount > 0 
+          ? `<button class="btn-play-all" id="btnPlayAll" disabled style="opacity:0.5;cursor:default">⏳ AI 語音合成中...</button>` 
+          : `<button class="btn-play-all" id="btnPlayAll">🔊 全部朗讀（${audioCount} 詞）</button>`
+        ) : ''}
     </div>
     <div class="trans-note">
       💡 這是「逐詞查字典」模式，非文法翻譯。族語與中文的語序可能不同，請對照單詞理解。
@@ -1050,9 +1054,9 @@ async function doTranslate() {
     });
   });
 
-  // Bind play-all button
+  // Bind play-all button (skip if unmatched words — will bind after AI TTS is ready)
   const playAllBtn = document.getElementById("btnPlayAll");
-  if (playAllBtn) {
+  if (playAllBtn && unmatchedCount === 0) {
     playAllBtn.addEventListener("click", () => {
       if (transResult._playing) { stopPlayAll(); }
       else { startPlayAll(); }
@@ -1115,15 +1119,32 @@ async function doTranslate() {
       
       // 🎧 Generate ONE TTS for the whole translated phrase
       const ttsBtn = document.getElementById("btnWholeTTS");
-      const qiNew = audioQueue.length;
+      // Calculate where to insert in queue: position of first unmatched word in input order
+      let matchedBeforeUnmatched = 0;
+      for (const seg of segments) {
+        if (seg.type === 'unmatched') break;
+        const matches = dictState.dictionary[seg.word];
+        if (matches && matches.length > 0 && matches[0].snda && matches[0].n) {
+          matchedBeforeUnmatched++;
+        }
+      }
       ttsViaILRDF(wholeResult, did).then(audioUrl => {
         if (audioUrl) {
-          audioQueue.push({ url: audioUrl, qi: "phrasetts" });
-          // Update play-all button
+          // Insert whole-phrase TTS at correct position (input order)
+          audioQueue.splice(matchedBeforeUnmatched, 0, { url: audioUrl, qi: "phrasetts" });
+          // Enable play-all button now that all audio is ready
           const playAllBtn2 = document.getElementById("btnPlayAll");
           if (playAllBtn2) {
+            playAllBtn2.disabled = false;
+            playAllBtn2.style.opacity = "";
+            playAllBtn2.style.cursor = "";
             const totalAudio = audioQueue.length;
             playAllBtn2.textContent = `🔊 全部朗讀（${totalAudio} 段）`;
+            // Bind click handler now
+            playAllBtn2.addEventListener("click", () => {
+              if (transResult._playing) { stopPlayAll(); }
+              else { startPlayAll(); }
+            });
           }
           ttsBtn.textContent = "🔊";
           ttsBtn.disabled = false;
@@ -1134,11 +1155,35 @@ async function doTranslate() {
             audioEl.play().catch(() => {});
           });
         } else {
+          // TTS failed — re-enable play-all anyway with just matched audio
+          const playAllBtn2 = document.getElementById("btnPlayAll");
+          if (playAllBtn2) {
+            playAllBtn2.disabled = false;
+            playAllBtn2.style.opacity = "";
+            playAllBtn2.style.cursor = "";
+            playAllBtn2.textContent = `🔊 全部朗讀（${audioQueue.length} 詞）`;
+            playAllBtn2.addEventListener("click", () => {
+              if (transResult._playing) { stopPlayAll(); }
+              else { startPlayAll(); }
+            });
+          }
           ttsBtn.textContent = "—";
           ttsBtn.style.opacity = "0.2";
           ttsBtn.disabled = true;
         }
       }).catch(() => {
+        // TTS error — still enable play-all with available audio
+        const playAllBtn2 = document.getElementById("btnPlayAll");
+        if (playAllBtn2) {
+          playAllBtn2.disabled = false;
+          playAllBtn2.style.opacity = "";
+          playAllBtn2.style.cursor = "";
+          playAllBtn2.textContent = `🔊 全部朗讀（${audioQueue.length} 詞）`;
+          playAllBtn2.addEventListener("click", () => {
+            if (transResult._playing) { stopPlayAll(); }
+            else { startPlayAll(); }
+          });
+        }
         ttsBtn.textContent = "❌";
         ttsBtn.disabled = false;
       });
